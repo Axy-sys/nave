@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3 uid="uid://projectile_scene_001"]
+
+[ext_resource type="Script" path="res://Scripts/Entities/Projectile.cs" id="1_projectile"]
+[ext_resource type="Texture2D" path="res://Assets/projectile_firewall.svg" id="2_sprite"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_projectile"]
+radius = 5.0
+
+[node name="Projectile" type="Area2D"]
+collision_layer = 2
+collision_mask = 4
+script = ExtResource("1_projectile")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0, 1, 1, 1)
+texture = ExtResource("2_sprite")
+scale = Vector2(0.8, 0.8)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_projectile")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+rect = Rect2(-10, -10, 20, 20)
+
+[connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="queue_free"]

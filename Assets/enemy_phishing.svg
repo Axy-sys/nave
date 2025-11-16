@@ -1,0 +1,14 @@
+<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <!-- Enemigo Phishing - Forma de anzuelo -->
+  <g stroke="#ffaa00" stroke-width="2" fill="none" stroke-linecap="round">
+    <!-- Anzuelo principal -->
+    <path d="M 24 12 Q 32 16, 32 24 Q 32 32, 24 36 Q 16 32, 16 24"/>
+    <!-- Gancho -->
+    <path d="M 24 36 L 24 42 Q 28 42, 28 38"/>
+    <!-- Línea de pesca -->
+    <line x1="24" y1="12" x2="24" y2="6" stroke-dasharray="2,2"/>
+    <!-- Ojos engañosos -->
+    <circle cx="20" cy="24" r="2"/>
+    <circle cx="28" cy="24" r="2"/>
+  </g>
+</svg>
