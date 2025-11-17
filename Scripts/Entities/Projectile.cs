@@ -3,76 +3,76 @@ using CyberSecurityGame.Core.Interfaces;
 
 namespace CyberSecurityGame.Entities
 {
-    /// <summary>
-    /// Proyectil genérico para todas las armas
-    /// Principio de Single Responsibility
-    /// </summary>
-    public partial class Projectile : Area2D
-    {
-        private Vector2 _direction;
-        private float _speed;
-        private float _damage;
-        private DamageType _damageType;
-        private float _lifetime = 5f;
-        private float _timer = 0f;
+	/// <summary>
+	/// Proyectil genérico para todas las armas
+	/// Principio de Single Responsibility
+	/// </summary>
+	public partial class Projectile : Area2D
+	{
+		private Vector2 _direction;
+		private float _speed;
+		private float _damage;
+		private DamageType _damageType;
+		private float _lifetime = 5f;
+		private float _timer = 0f;
 
-        public void Initialize(Vector2 direction, float speed, float damage, DamageType damageType)
-        {
-            _direction = direction.Normalized();
-            _speed = speed;
-            _damage = damage;
-            _damageType = damageType;
+		public void Initialize(Vector2 direction, float speed, float damage, DamageType damageType)
+		{
+			_direction = direction.Normalized();
+			_speed = speed;
+			_damage = damage;
+			_damageType = damageType;
 
-            // Rotar sprite hacia dirección
-            Rotation = direction.Angle();
+			// Rotar sprite hacia dirección
+			Rotation = direction.Angle();
 
-            // Setup colisión
-            var collision = new CollisionShape2D();
-            var shape = new CircleShape2D();
-            shape.Radius = 5f;
-            collision.Shape = shape;
-            AddChild(collision);
+			// Setup colisión
+			var collision = new CollisionShape2D();
+			var shape = new CircleShape2D();
+			shape.Radius = 5f;
+			collision.Shape = shape;
+			AddChild(collision);
 
-            // Conectar señales
-            BodyEntered += OnBodyEntered;
-            AreaEntered += OnAreaEntered;
-        }
+			// Conectar señales
+			BodyEntered += OnBodyEntered;
+			AreaEntered += OnAreaEntered;
+		}
 
-        public override void _Process(double delta)
-        {
-            // Movimiento
-            Position += _direction * _speed * (float)delta;
+		public override void _Process(double delta)
+		{
+			// Movimiento
+			Position += _direction * _speed * (float)delta;
 
-            // Lifetime
-            _timer += (float)delta;
-            if (_timer >= _lifetime)
-            {
-                QueueFree();
-            }
-        }
+			// Lifetime
+			_timer += (float)delta;
+			if (_timer >= _lifetime)
+			{
+				QueueFree();
+			}
+		}
 
-        private void OnBodyEntered(Node2D body)
-        {
-            // Verificar si es un enemigo
-            if (body.Name.ToString().Contains("Enemy") || body.HasNode("HealthComponent"))
-            {
-                var healthComp = body.GetNodeOrNull<Components.HealthComponent>("HealthComponent");
-                if (healthComp != null)
-                {
-                    healthComp.TakeDamage(_damage, _damageType);
-                }
-                
-                QueueFree();
-            }
-        }
+		private void OnBodyEntered(Node2D body)
+		{
+			// Verificar si es un enemigo
+			if (body.Name.ToString().Contains("Enemy") || body.HasNode("HealthComponent"))
+			{
+				var healthComp = body.GetNodeOrNull<Components.HealthComponent>("HealthComponent");
+				if (healthComp != null)
+				{
+					healthComp.TakeDamage(_damage, _damageType);
+				}
+				
+				QueueFree();
+			}
+		}
 
-        private void OnAreaEntered(Area2D area)
-        {
-            // Colisión con otras áreas
-            if (area.Name.ToString().Contains("Enemy"))
-            {
-                QueueFree();
-            }
-        }
-    }
+		private void OnAreaEntered(Area2D area)
+		{
+			// Colisión con otras áreas
+			if (area.Name.ToString().Contains("Enemy"))
+			{
+				QueueFree();
+			}
+		}
+	}
 }

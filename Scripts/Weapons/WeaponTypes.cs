@@ -15,6 +15,7 @@ namespace CyberSecurityGame.Weapons
             ProjectileSpeed = 600f;
             _maxAmmo = -1; // Munición infinita
             _currentAmmo = -1;
+            ProjectileScene = GD.Load<PackedScene>("res://Scenes/Projectile.tscn");
         }
 
         public override void Fire(Vector2 position, Vector2 direction)
@@ -51,6 +52,7 @@ namespace CyberSecurityGame.Weapons
             ProjectileSpeed = 700f;
             _maxAmmo = 30;
             _currentAmmo = 30;
+            ProjectileScene = GD.Load<PackedScene>("res://Scenes/Projectile.tscn");
         }
 
         public override void Fire(Vector2 position, Vector2 direction)
@@ -98,6 +100,7 @@ namespace CyberSecurityGame.Weapons
             ProjectileSpeed = 400f;
             _maxAmmo = 10;
             _currentAmmo = 10;
+            ProjectileScene = GD.Load<PackedScene>("res://Scenes/Projectile.tscn");
         }
 
         public override void Fire(Vector2 position, Vector2 direction)
@@ -140,6 +143,7 @@ namespace CyberSecurityGame.Weapons
             ProjectileSpeed = 0f; // Estático
             _maxAmmo = 5;
             _currentAmmo = 5;
+            ProjectileScene = GD.Load<PackedScene>("res://Scenes/Projectile.tscn");
         }
 
         public override void Fire(Vector2 position, Vector2 direction)
