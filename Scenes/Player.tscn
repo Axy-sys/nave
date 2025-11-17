@@ -12,13 +12,16 @@ collision_mask = 6
 script = ExtResource("1_player")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = 10
 modulate = Color(0, 1, 1, 1)
 texture = ExtResource("2_sprite")
 scale = Vector2(2, 2)
-z_index = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_player")
+
+[node name="FirePosition" type="Marker2D" parent="."]
+position = Vector2(0, -25)
 
 [node name="HealthComponent" type="Node" parent="."]
 
@@ -27,6 +30,3 @@ shape = SubResource("CircleShape2D_player")
 [node name="WeaponComponent" type="Node" parent="."]
 
 [node name="ShieldComponent" type="Node" parent="."]
-
-[node name="FirePosition" type="Marker2D" parent="."]
-position = Vector2(0, -25)

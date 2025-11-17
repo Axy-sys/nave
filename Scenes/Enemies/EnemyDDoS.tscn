@@ -20,11 +20,11 @@ texture = ExtResource("1_sprite")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_enemy")
 
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+rect = Rect2(-30, -30, 60, 60)
+
 [node name="HealthComponent" type="Node" parent="."]
 
 [node name="MovementComponent" type="Node" parent="."]
 
 [node name="AIComponent" type="Node" parent="."]
-
-[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
-rect = Rect2(-30, -30, 60, 60)

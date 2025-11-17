@@ -15,17 +15,17 @@ script = SubResource("GDScript_enemy")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.8, 0, 0, 1)
-texture = ExtResource("1_sprite")
 scale = Vector2(1.2, 1.2)
+texture = ExtResource("1_sprite")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_boss")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+rect = Rect2(-40, -40, 80, 80)
 
 [node name="HealthComponent" type="Node" parent="."]
 
 [node name="MovementComponent" type="Node" parent="."]
 
 [node name="AIComponent" type="Node" parent="."]
-
-[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
-rect = Rect2(-40, -40, 80, 80)

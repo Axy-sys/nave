@@ -19,6 +19,7 @@ namespace CyberSecurityGame.Views
 		private Panel _tipPanel;
 		private Label _tipLabel;
 		private Timer _tipTimer;
+		private Minimap _minimap;
 
 		public override void _Ready()
 		{
@@ -28,55 +29,140 @@ namespace CyberSecurityGame.Views
 
 		private void InitializeUI()
 		{
-			// Crear estructura UI programáticamente
-			// En producción, esto vendría de una escena .tscn
+			// Crear estructura UI programáticamente con mejor diseño
 			
-			// Score
+			// Panel contenedor principal con fondo semi-transparente
+			var hudPanel = new Panel();
+			hudPanel.Name = "HUDPanel";
+			hudPanel.Position = new Vector2(10, 10);
+			hudPanel.Size = new Vector2(280, 220);
+			
+			var panelStyle = new StyleBoxFlat();
+			panelStyle.BgColor = new Color(0, 0.1f, 0.15f, 0.85f);
+			panelStyle.BorderColor = new Color(0, 1, 1, 0.8f);
+			panelStyle.SetBorderWidthAll(2);
+			panelStyle.SetCornerRadiusAll(10);
+			panelStyle.ShadowColor = new Color(0, 1, 1, 0.3f);
+			panelStyle.ShadowSize = 5;
+			hudPanel.AddThemeStyleboxOverride("panel", panelStyle);
+			AddChild(hudPanel);
+			
+			// Score con glow
 			_scoreLabel = new Label();
 			_scoreLabel.Name = "ScoreLabel";
-			_scoreLabel.Position = new Vector2(20, 20);
+			_scoreLabel.Position = new Vector2(15, 10);
 			_scoreLabel.AddThemeColorOverride("font_color", Colors.White);
-			AddChild(_scoreLabel);
+			_scoreLabel.AddThemeColorOverride("font_shadow_color", new Color(0, 1, 1, 0.5f));
+			_scoreLabel.AddThemeConstantOverride("shadow_outline_size", 2);
+			_scoreLabel.AddThemeFontSizeOverride("font_size", 20);
+			hudPanel.AddChild(_scoreLabel);
 
-			// Level
+			// Level con efecto cyan
 			_levelLabel = new Label();
 			_levelLabel.Name = "LevelLabel";
-			_levelLabel.Position = new Vector2(20, 50);
-			_levelLabel.AddThemeColorOverride("font_color", Colors.Cyan);
-			AddChild(_levelLabel);
+			_levelLabel.Position = new Vector2(15, 35);
+			_levelLabel.AddThemeColorOverride("font_color", new Color(0, 1, 1));
+			_levelLabel.AddThemeColorOverride("font_shadow_color", new Color(0, 1, 1, 0.8f));
+			_levelLabel.AddThemeConstantOverride("shadow_outline_size", 3);
+			_levelLabel.AddThemeFontSizeOverride("font_size", 18);
+			hudPanel.AddChild(_levelLabel);
 
-			// Lives
+			// Lives con icono
 			_livesLabel = new Label();
 			_livesLabel.Name = "LivesLabel";
-			_livesLabel.Position = new Vector2(20, 80);
-			_livesLabel.AddThemeColorOverride("font_color", Colors.Red);
-			AddChild(_livesLabel);
+			_livesLabel.Position = new Vector2(15, 60);
+			_livesLabel.AddThemeColorOverride("font_color", new Color(1, 0.3f, 0.3f));
+			_livesLabel.AddThemeColorOverride("font_shadow_color", new Color(1, 0, 0, 0.5f));
+			_livesLabel.AddThemeConstantOverride("shadow_outline_size", 2);
+			_livesLabel.AddThemeFontSizeOverride("font_size", 18);
+			hudPanel.AddChild(_livesLabel);
 
-			// Health Bar
+			// Label para Health
+			var healthLabel = new Label();
+			healthLabel.Position = new Vector2(15, 85);
+			healthLabel.Text = "💚 SALUD";
+			healthLabel.AddThemeColorOverride("font_color", new Color(0, 1, 0.5f));
+			healthLabel.AddThemeFontSizeOverride("font_size", 14);
+			hudPanel.AddChild(healthLabel);
+
+			// Health Bar mejorada
 			_healthBar = new ProgressBar();
 			_healthBar.Name = "HealthBar";
-			_healthBar.Position = new Vector2(20, 120);
-			_healthBar.Size = new Vector2(200, 20);
+			_healthBar.Position = new Vector2(15, 105);
+			_healthBar.Size = new Vector2(250, 25);
 			_healthBar.MaxValue = 100;
 			_healthBar.Value = 100;
-			AddChild(_healthBar);
+			_healthBar.ShowPercentage = true;
+			
+			var healthStyle = new StyleBoxFlat();
+			healthStyle.BgColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+			healthStyle.BorderColor = new Color(0, 1, 0.5f);
+			healthStyle.SetBorderWidthAll(2);
+			healthStyle.SetCornerRadiusAll(5);
+			_healthBar.AddThemeStyleboxOverride("background", healthStyle);
+			
+			var healthFill = new StyleBoxFlat();
+			healthFill.BgColor = new Color(0, 1, 0.5f);
+			healthFill.SetCornerRadiusAll(5);
+			_healthBar.AddThemeStyleboxOverride("fill", healthFill);
+			hudPanel.AddChild(_healthBar);
 
-			// Shield Bar
+			// Shield Bar mejorada
+			var shieldLabel = new Label();
+			shieldLabel.Name = "ShieldLabel";
+			shieldLabel.Position = new Vector2(15, 135);
+			shieldLabel.Text = "🛡️ ESCUDO";
+			shieldLabel.AddThemeColorOverride("font_color", new Color(0, 0.7f, 1));
+			shieldLabel.AddThemeFontSizeOverride("font_size", 14);
+			shieldLabel.Visible = false;
+			hudPanel.AddChild(shieldLabel);
+			
 			_shieldBar = new ProgressBar();
 			_shieldBar.Name = "ShieldBar";
-			_shieldBar.Position = new Vector2(20, 150);
-			_shieldBar.Size = new Vector2(200, 20);
+			_shieldBar.Position = new Vector2(15, 155);
+			_shieldBar.Size = new Vector2(250, 25);
 			_shieldBar.MaxValue = 100;
 			_shieldBar.Value = 0;
+			_shieldBar.ShowPercentage = true;
 			_shieldBar.Visible = false;
-			AddChild(_shieldBar);
+			
+			var shieldStyle = new StyleBoxFlat();
+			shieldStyle.BgColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+			shieldStyle.BorderColor = new Color(0, 0.7f, 1);
+			shieldStyle.SetBorderWidthAll(2);
+			shieldStyle.SetCornerRadiusAll(5);
+			_shieldBar.AddThemeStyleboxOverride("background", shieldStyle);
+			
+			var shieldFill = new StyleBoxFlat();
+			shieldFill.BgColor = new Color(0, 0.7f, 1);
+			shieldFill.SetCornerRadiusAll(5);
+			_shieldBar.AddThemeStyleboxOverride("fill", shieldFill);
+			hudPanel.AddChild(_shieldBar);
 
-			// Weapon Label
+			// Weapon Label mejorado (bottom right)
+			var weaponPanel = new Panel();
+			weaponPanel.Name = "WeaponPanel";
+			weaponPanel.Position = new Vector2(920, 650);
+			weaponPanel.Size = new Vector2(260, 70);
+			
+			var weaponStyle = new StyleBoxFlat();
+			weaponStyle.BgColor = new Color(0, 0.1f, 0.15f, 0.85f);
+			weaponStyle.BorderColor = new Color(1, 0.8f, 0);
+			weaponStyle.SetBorderWidthAll(2);
+			weaponStyle.SetCornerRadiusAll(10);
+			weaponStyle.ShadowColor = new Color(1, 0.8f, 0, 0.3f);
+			weaponStyle.ShadowSize = 5;
+			weaponPanel.AddThemeStyleboxOverride("panel", weaponStyle);
+			AddChild(weaponPanel);
+			
 			_weaponLabel = new Label();
 			_weaponLabel.Name = "WeaponLabel";
-			_weaponLabel.Position = new Vector2(20, 180);
-			_weaponLabel.AddThemeColorOverride("font_color", Colors.Yellow);
-			AddChild(_weaponLabel);
+			_weaponLabel.Position = new Vector2(15, 20);
+			_weaponLabel.AddThemeColorOverride("font_color", new Color(1, 0.9f, 0));
+			_weaponLabel.AddThemeColorOverride("font_shadow_color", new Color(1, 0.8f, 0, 0.8f));
+			_weaponLabel.AddThemeConstantOverride("shadow_outline_size", 3);
+			_weaponLabel.AddThemeFontSizeOverride("font_size", 22);
+			weaponPanel.AddChild(_weaponLabel);
 
 			// Tip Panel
 			_tipPanel = new Panel();
@@ -99,6 +185,13 @@ namespace CyberSecurityGame.Views
 			_tipTimer.OneShot = true;
 			_tipTimer.Timeout += HideTip;
 			AddChild(_tipTimer);
+
+			// Minimap integrado en el HUD
+			_minimap = new Minimap();
+			_minimap.Name = "Minimap";
+			_minimap.DetectionRadius = 600f;
+			_minimap.MinimapSize = 180f;
+			AddChild(_minimap);
 
 			UpdateUI(0, 1, 100, 0, 3, "Firewall");
 		}

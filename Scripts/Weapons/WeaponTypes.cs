@@ -40,13 +40,9 @@ namespace CyberSecurityGame.Weapons
     /// <summary>
     /// Arma Antivirus - Dispara ráfagas que neutralizan malware
     /// </summary>
-    public partial class AntivirusWeapon : BaseWeapon
-    {
-        private int _burstCount = 3;
-        private float _burstDelay = 0.1f;
-        private int _currentBurst = 0;
-
-        public AntivirusWeapon()
+	public partial class AntivirusWeapon : BaseWeapon
+	{
+		private int _burstCount = 3;        public AntivirusWeapon()
         {
             Damage = 15f;
             ProjectileSpeed = 700f;

@@ -38,11 +38,11 @@ texture = ExtResource("1_sprite")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_powerup")
 
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+rect = Rect2(-20, -20, 40, 40)
+
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 autoplay = "rotate"
 libraries = {
 "": SubResource("AnimationLibrary_powerup")
 }
-
-[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
-rect = Rect2(-20, -20, 40, 40)
