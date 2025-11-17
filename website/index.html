@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CyberSecurity Defender - Juego educativo sobre ciberseguridad. Aprende mientras juegas con patrones de diseño SOLID y arquitectura MVC.">
+    <meta name="keywords" content="ciberseguridad, juego educativo, SOLID, MVC, Godot, C#">
+    <title>CyberSecurity Defender - Aprende Ciberseguridad Jugando</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-cyan: #00ffff;
+            --primary-blue: #001a33;
+            --dark-bg: #000d1a;
+            --accent-green: #00ff88;
+            --accent-red: #ff0044;
+            --text-light: #ffffff;
+            --text-gray: #a0a0a0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-bg) 100%);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: rgba(0, 26, 51, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid var(--primary-cyan);
+            box-shadow: 0 4px 20px rgba(0, 255, 255, 0.3);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-cyan);
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo::before {
+            content: "🛡️";
+            font-size: 2rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-cyan);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav a:hover {
+            color: var(--primary-cyan);
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-cyan), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 1)); }
+        }
+
+        .hero-text p {
+            font-size: 1.3rem;
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-cyan), var(--accent-green));
+            color: var(--dark-bg);
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 255, 255, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-cyan);
+            border: 2px solid var(--primary-cyan);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-cyan);
+            color: var(--dark-bg);
+        }
+
+        .hero-visual {
+            position: relative;
+        }
+
+        .game-mockup {
+            width: 100%;
+            border-radius: 20px;
+            border: 3px solid var(--primary-cyan);
+            box-shadow: 0 10px 40px rgba(0, 255, 255, 0.3);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Features Section */
+        .features {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--primary-cyan);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary-cyan), transparent);
+            margin: 1rem auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(0, 26, 51, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-cyan);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.4);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: var(--primary-cyan);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-gray);
+        }
+
+        /* Patterns Section */
+        .patterns {
+            padding: 5rem 2rem;
+            background: rgba(0, 13, 26, 0.5);
+        }
+
+        .patterns-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .patterns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .pattern-badge {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 136, 0.1));
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--primary-cyan);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pattern-badge:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 136, 0.2));
+        }
+
+        .pattern-badge h4 {
+            color: var(--accent-green);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tech-grid {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .tech-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(0, 26, 51, 0.6);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            min-width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-cyan);
+        }
+
+        .tech-item .icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 136, 0.1));
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-cyan);
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 13, 26, 0.95);
+            padding: 3rem 2rem;
+            border-top: 2px solid var(--primary-cyan);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--primary-cyan);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary-cyan);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid var(--primary-cyan);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary-cyan);
+            color: var(--dark-bg);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            color: var(--text-gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .cta-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">CyberSecurity Defender</div>
+            <ul>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#features">Características</a></li>
+                <li><a href="#arquitectura">Arquitectura</a></li>
+                <li><a href="#tecnologia">Tecnología</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Aprende Ciberseguridad Jugando</h1>
+                <p>Un juego educativo tipo space shooter que te enseña conceptos de seguridad informática mientras combates amenazas cibernéticas.</p>
+                <div class="cta-buttons">
+                    <a href="https://github.com/Axy-sys/nave" class="btn btn-primary" target="_blank">Ver en GitHub</a>
+                    <a href="#features" class="btn btn-secondary">Conocer Más</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <svg class="game-mockup" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Game screen mockup -->
+                    <rect width="600" height="400" fill="#001a33"/>
+                    <rect x="10" y="10" width="580" height="380" fill="#000d1a" stroke="#00ffff" stroke-width="2"/>
+                    
+                    <!-- Stars -->
+                    <circle cx="100" cy="80" r="2" fill="#00aaff" opacity="0.6"/>
+                    <circle cx="250" cy="120" r="1.5" fill="#00aaff" opacity="0.6"/>
+                    <circle cx="450" cy="90" r="2" fill="#00aaff" opacity="0.6"/>
+                    <circle cx="180" cy="200" r="1.5" fill="#00aaff" opacity="0.6"/>
+                    <circle cx="500" cy="250" r="2" fill="#00aaff" opacity="0.6"/>
+                    
+                    <!-- Player ship -->
+                    <g transform="translate(300, 320)">
+                        <path d="M 0,-20 L -15,10 L 0,5 L 15,10 Z" fill="none" stroke="#00ffff" stroke-width="2"/>
+                        <circle cx="0" cy="-5" r="3" fill="none" stroke="#00ffff" stroke-width="1.5"/>
+                    </g>
+                    
+                    <!-- Enemies -->
+                    <g transform="translate(200, 150)">
+                        <circle cx="0" cy="0" r="15" fill="none" stroke="#ff0044" stroke-width="2"/>
+                        <circle cx="0" cy="0" r="8" fill="#ff0044" opacity="0.3"/>
+                    </g>
+                    
+                    <g transform="translate(400, 180)">
+                        <path d="M -10,-10 L 10,-10 L 5,10 L -5,10 Z" fill="none" stroke="#ff8800" stroke-width="2"/>
+                    </g>
+                    
+                    <!-- Projectiles -->
+                    <circle cx="300" cy="270" r="4" fill="#00ffff"/>
+                    <circle cx="305" cy="240" r="4" fill="#00ffff"/>
+                    
+                    <!-- HUD -->
+                    <text x="20" y="35" fill="#00ffff" font-size="14" font-family="monospace">Score: 1250</text>
+                    <text x="20" y="55" fill="#00ff88" font-size="14" font-family="monospace">Level: 3</text>
+                    <rect x="20" y="360" width="150" height="15" fill="none" stroke="#00ffff" stroke-width="1"/>
+                    <rect x="21" y="361" width="120" height="13" fill="#00ffff"/>
+                    <text x="180" y="372" fill="#ffffff" font-size="12" font-family="monospace">HP: 80%</text>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <h2 class="section-title">Características Principales</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3>Gameplay Adictivo</h3>
+                <p>Space shooter con mecánicas clásicas: esquiva, dispara y mejora tu nave mientras enfrentas oleadas de amenazas.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎓</div>
+                <h3>Educativo</h3>
+                <p>Aprende sobre malware, phishing, DDoS, ransomware y más mientras juegas. Incluye quizzes interactivos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚔️</div>
+                <h3>4 Armas Únicas</h3>
+                <p>Firewall, Antivirus, Encriptación y Honeypot. Cada una con estrategia y mecánicas diferentes.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👾</div>
+                <h3>10 Tipos de Enemigos</h3>
+                <p>Cada enemigo representa una amenaza real: Malware, Phishing, SQL Injection, Trojan, Ransomware y más.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💎</div>
+                <h3>Power-ups Estratégicos</h3>
+                <p>Backup Restore, Patch Update, Encryption Shield, IDS Upgrade y más mejoras tácticas.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌊</div>
+                <h3>Sistema de Oleadas</h3>
+                <p>Progresión por oleadas con jefes cada 5 niveles. Dificultad escalable y desafiante.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="arquitectura" class="patterns">
+        <div class="patterns-content">
+            <h2 class="section-title">Arquitectura de Software Profesional</h2>
+            <p style="text-align: center; color: var(--text-gray); max-width: 800px; margin: 0 auto 2rem;">
+                Construido con las mejores prácticas de desarrollo, aplicando patrones de diseño reconocidos y principios SOLID para código mantenible y escalable.
+            </p>
+            
+            <h3 style="color: var(--accent-green); text-align: center; margin-top: 3rem; margin-bottom: 1rem;">Patrones de Diseño Implementados</h3>
+            <div class="patterns-grid">
+                <div class="pattern-badge">
+                    <h4>MVC</h4>
+                    <p style="color: var(--text-gray); font-size: 0.9rem;">Model-View-Controller</p>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Component</h4>
+                    <p style="color: var(--text-gray); font-size: 0.9rem;">Composición sobre Herencia</p>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Strategy</h4>
+                    <p style="color: var(--text-gray); font-size: 0.9rem;">Armas & AI Intercambiables</p>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Observer</h4>
+                    <p style="color: var(--text-gray); font-size: 0.9rem;">Event Bus con 15 eventos</p>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Factory</h4>
+                    <p style="color: var(--text-gray); font-size: 0.9rem;">Creación de Enemigos</p>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Singleton</h4>
+                    <p style="color: var(--text-gray); font-size: 0.9rem;">Managers & Systems</p>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Template Method</h4>
+                    <p style="color: var(--text-gray); font-size: 0.9rem;">BaseComponent, BaseWeapon</p>
+                </div>
+            </div>
+
+            <h3 style="color: var(--accent-green); text-align: center; margin-top: 3rem; margin-bottom: 1rem;">Principios SOLID</h3>
+            <div class="patterns-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <div class="pattern-badge">
+                    <h4>Single Responsibility</h4>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Open/Closed</h4>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Liskov Substitution</h4>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Interface Segregation</h4>
+                </div>
+                <div class="pattern-badge">
+                    <h4>Dependency Inversion</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section id="tecnologia" class="tech-stack">
+        <h2 class="section-title">Tecnologías Utilizadas</h2>
+        <div class="tech-grid">
+            <div class="tech-item">
+                <div class="icon">🎮</div>
+                <h4 style="color: var(--primary-cyan);">Godot 4.x</h4>
+                <p style="color: var(--text-gray); font-size: 0.9rem;">Game Engine</p>
+            </div>
+            <div class="tech-item">
+                <div class="icon">💻</div>
+                <h4 style="color: var(--primary-cyan);">C# .NET</h4>
+                <p style="color: var(--text-gray); font-size: 0.9rem;">Scripting</p>
+            </div>
+            <div class="tech-item">
+                <div class="icon">🎨</div>
+                <h4 style="color: var(--primary-cyan);">SVG</h4>
+                <p style="color: var(--text-gray); font-size: 0.9rem;">Vector Graphics</p>
+            </div>
+            <div class="tech-item">
+                <div class="icon">📐</div>
+                <h4 style="color: var(--primary-cyan);">PlantUML</h4>
+                <p style="color: var(--text-gray); font-size: 0.9rem;">Architecture Diagrams</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2>¿Listo para Defender el Ciberespacio?</h2>
+        <p>Descarga el juego, explora el código fuente o contribuye al proyecto</p>
+        <div class="cta-buttons" style="justify-content: center;">
+            <a href="https://github.com/Axy-sys/nave" class="btn btn-primary" target="_blank">⭐ Ver en GitHub</a>
+            <a href="https://github.com/Axy-sys/nave/releases" class="btn btn-secondary" target="_blank">📥 Descargar</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contacto">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>CyberSecurity Defender</h3>
+                <p style="color: var(--text-gray);">Juego educativo sobre ciberseguridad desarrollado con patrones de diseño profesionales.</p>
+                <div class="social-links">
+                    <a href="https://github.com/Axy-sys/nave" target="_blank" title="GitHub">💻</a>
+                    <a href="#" title="Twitter">🐦</a>
+                    <a href="#" title="Discord">💬</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Recursos</h3>
+                <ul style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li><a href="https://github.com/Axy-sys/nave/blob/main/README.md">Documentación</a></li>
+                    <li><a href="https://github.com/Axy-sys/nave/tree/main/diagrams">Diagramas UML</a></li>
+                    <li><a href="https://github.com/Axy-sys/nave/blob/main/QUICKSTART.md">Quick Start</a></li>
+                    <li><a href="https://github.com/Axy-sys/nave/issues">Issues</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Aprende Más</h3>
+                <ul style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li><a href="#">Conceptos de Ciberseguridad</a></li>
+                    <li><a href="#">Patrones de Diseño</a></li>
+                    <li><a href="#">Godot + C# Tutorial</a></li>
+                    <li><a href="#">Contribuir</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Proyecto</h3>
+                <p style="color: var(--text-gray); margin-bottom: 1rem;">Proyecto educativo open-source desarrollado con ❤️</p>
+                <p style="color: var(--text-gray); font-size: 0.9rem;">
+                    Licencia: MIT<br>
+                    Godot 4.5.1<br>
+                    C# .NET SDK
+                </p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2025 CyberSecurity Defender. Todos los derechos reservados.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">Hecho con Godot Engine y mucha ☕</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Parallax effect for hero
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero-visual');
+            if (hero) {
+                hero.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
+        });
+
+        // Animate cards on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .pattern-badge, .tech-item').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
