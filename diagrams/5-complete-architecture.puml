@@ -1,0 +1,124 @@
+@startuml Complete Architecture Overview
+
+skinparam classAttributeIconSize 0
+left to right direction
+
+title Arquitectura Completa - CyberSecurity Defender
+
+package "🎮 CORE LAYER" {
+  [GameManager\n(Controller + Singleton)]
+  [GameEventBus\n(Observer)]
+  [Interfaces\nIComponent, IWeapon\nIDamageable, IMovable]
+}
+
+package "📊 DATA LAYER (Models)" {
+  [GameStateModel]
+  [PlayerModel]
+}
+
+package "🎨 PRESENTATION LAYER (Views)" {
+  [GameHUD]
+  [QuizView]
+}
+
+package "🔧 COMPONENT LAYER" {
+  [HealthComponent]
+  [MovementComponent]
+  [WeaponComponent]
+  [ShieldComponent]
+}
+
+package "⚔️ WEAPONS (Strategy)" {
+  [FirewallWeapon]
+  [AntivirusWeapon]
+  [EncryptionWeapon]
+  [HoneypotWeapon]
+}
+
+package "👾 ENTITIES" {
+  [Player\n(Composition)]
+  [Projectile]
+  [EnemyFactory]
+}
+
+package "🤖 AI (Strategy)" {
+  [ChaseAI]
+  [ZigZagAI]
+  [CircleAI]
+}
+
+package "⚙️ SYSTEMS (Singletons)" {
+  [WaveSystem]
+  [PowerUpSystem]
+  [VulnerabilitySystem]
+}
+
+package "📚 EDUCATION" {
+  [QuizSystem\n(Singleton)]
+  [SecurityTipsSystem\n(Singleton)]
+}
+
+package "🎬 MAIN SCENE" {
+  [MainScene\n(Coordinator)]
+}
+
+' MVC Relations
+[GameManager\n(Controller + Singleton)] --> [GameStateModel]
+[GameManager\n(Controller + Singleton)] --> [PlayerModel]
+[GameHUD] --> [GameStateModel]
+[GameHUD] --> [PlayerModel]
+
+' Observer
+[GameEventBus\n(Observer)] <-- [GameManager\n(Controller + Singleton)]
+[GameEventBus\n(Observer)] <-- [Player\n(Composition)]
+[GameHUD] --> [GameEventBus\n(Observer)]
+[QuizView] --> [GameEventBus\n(Observer)]
+
+' Component Composition
+[Player\n(Composition)] *-- [HealthComponent]
+[Player\n(Composition)] *-- [MovementComponent]
+[Player\n(Composition)] *-- [WeaponComponent]
+[Player\n(Composition)] *-- [ShieldComponent]
+
+' Strategy
+[WeaponComponent] o-- [FirewallWeapon]
+[WeaponComponent] o-- [AntivirusWeapon]
+[WeaponComponent] o-- [EncryptionWeapon]
+[WeaponComponent] o-- [HoneypotWeapon]
+
+[EnemyFactory] --> [ChaseAI]
+[EnemyFactory] --> [ZigZagAI]
+[EnemyFactory] --> [CircleAI]
+
+' Main Coordinator
+[MainScene\n(Coordinator)] --> [GameManager\n(Controller + Singleton)]
+[MainScene\n(Coordinator)] --> [WaveSystem]
+[MainScene\n(Coordinator)] --> [PowerUpSystem]
+[MainScene\n(Coordinator)] --> [VulnerabilitySystem]
+[MainScene\n(Coordinator)] --> [QuizSystem\n(Singleton)]
+[MainScene\n(Coordinator)] --> [SecurityTipsSystem\n(Singleton)]
+[MainScene\n(Coordinator)] --> [GameHUD]
+[MainScene\n(Coordinator)] --> [QuizView]
+
+' Systems
+[WaveSystem] --> [EnemyFactory]
+[GameManager\n(Controller + Singleton)] --> [SecurityTipsSystem\n(Singleton)]
+
+note bottom of [MainScene\n(Coordinator)]
+  **ENTRY POINT**
+  Inicializa todos los sistemas
+  Carga escena del jugador
+end note
+
+legend right
+  |= Patrón |= Implementación |
+  | MVC | GameManager (C), Models (M), Views (V) |
+  | Component | Player compuesto de 4 componentes |
+  | Strategy | Armas intercambiables, AI intercambiable |
+  | Observer | GameEventBus - 15 eventos |
+  | Factory | EnemyFactory - 10 tipos de enemigos |
+  | Singleton | GameManager, Systems (6 clases) |
+  | Template Method | BaseComponent, BaseWeapon, BaseEnemyAI |
+endlegend
+
+@enduml

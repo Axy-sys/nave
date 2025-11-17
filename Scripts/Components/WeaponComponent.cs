@@ -44,6 +44,13 @@ namespace CyberSecurityGame.Components
         public void SetWeapon(IWeapon weapon)
         {
             _currentWeapon = weapon;
+            
+            // Si el arma es BaseWeapon, configurar el nodo raíz para spawning
+            if (weapon is BaseWeapon baseWeapon)
+            {
+                baseWeapon.SetSceneRoot(_weaponOwner.GetTree()?.Root);
+            }
+            
             GD.Print($"Arma equipada: {weapon.GetWeaponName()}");
         }
 

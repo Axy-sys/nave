@@ -1,0 +1,90 @@
+@startuml Component Pattern
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title Component Pattern - Composición sobre Herencia
+
+interface IComponent {
+  +Initialize(owner: Node2D)
+  +Update(delta: double)
+  +Cleanup()
+}
+
+abstract class BaseComponent {
+  #_owner: Node2D
+  #_isInitialized: bool
+  +Initialize(owner: Node2D)
+  +Update(delta: double)
+  +Cleanup()
+  #OnInitialize() {abstract}
+  #OnUpdate(delta: double) {abstract}
+  #OnCleanup() {abstract}
+}
+
+class HealthComponent {
+  +MaxHealth: float
+  +CurrentHealth: float
+  +TakeDamage(amount: float, type: DamageType)
+  +Heal(amount: float)
+}
+
+class MovementComponent {
+  +Speed: float
+  +UseAcceleration: bool
+  +Move(direction: Vector2, delta: double)
+  +ApplyMovement(body: CharacterBody2D)
+}
+
+class WeaponComponent {
+  +FireRate: float
+  -_currentWeapon: IWeapon
+  +SetWeapon(weapon: IWeapon)
+  +TryFire(direction: Vector2): bool
+  +CanFire(): bool
+}
+
+class ShieldComponent {
+  +MaxShieldStrength: float
+  +CurrentShield: float
+  +ActivateShield()
+  +AbsorbDamage(damage: float): float
+  +IsActive(): bool
+}
+
+class Player {
+  -_healthComponent: HealthComponent
+  -_movementComponent: MovementComponent
+  -_weaponComponent: WeaponComponent
+  -_shieldComponent: ShieldComponent
+  +MaxHealth: float
+  +Speed: float
+  -InitializeComponents()
+  -HandleInput(delta: double)
+}
+
+IComponent <|.. BaseComponent
+BaseComponent <|-- HealthComponent
+BaseComponent <|-- MovementComponent
+BaseComponent <|-- WeaponComponent
+BaseComponent <|-- ShieldComponent
+
+Player *-- HealthComponent : contiene
+Player *-- MovementComponent : contiene
+Player *-- WeaponComponent : contiene
+Player *-- ShieldComponent : contiene
+
+note top of Player
+  **COMPOSICIÓN**
+  Player usa componentes en vez de herencia
+  Flexible y reutilizable
+  Cumple "Composition over Inheritance"
+end note
+
+note right of BaseComponent
+  **TEMPLATE METHOD**
+  Define esqueleto del algoritmo
+  Subclases implementan pasos específicos
+end note
+
+@enduml

@@ -7,15 +7,21 @@ namespace CyberSecurityGame.Weapons
 	/// Clase base para armas usando Strategy Pattern
 	/// Principio de Open/Closed: fácil de extender con nuevas armas
 	/// </summary>
-	public abstract partial class BaseWeapon : Node, IWeapon
+	public abstract partial class BaseWeapon : IWeapon
 	{
-		[Export] public float Damage = 10f;
-		[Export] public float ProjectileSpeed = 500f;
-		[Export] public PackedScene ProjectileScene;
+		public float Damage = 10f;
+		public float ProjectileSpeed = 500f;
+		public PackedScene ProjectileScene;
 		
 		protected int _currentAmmo;
 		protected int _maxAmmo;
 		protected bool _needsReload = false;
+		protected Node _sceneRoot; // Referencia al nodo raíz para instanciar proyectiles
+
+		public void SetSceneRoot(Node root)
+		{
+			_sceneRoot = root;
+		}
 
 		public abstract void Fire(Vector2 position, Vector2 direction);
 		public abstract bool CanFire();
@@ -31,6 +37,12 @@ namespace CyberSecurityGame.Weapons
 				return;
 			}
 
+			if (_sceneRoot == null)
+			{
+				GD.PrintErr("SceneRoot no está asignado en el arma");
+				return;
+			}
+
 			var projectile = ProjectileScene.Instantiate() as Node2D;
 			if (projectile == null) return;
 
@@ -43,8 +55,8 @@ namespace CyberSecurityGame.Weapons
 				projectile.Call("Initialize", direction, ProjectileSpeed, Damage, (int)damageType);
 			}
 
-			// Agregar al árbol de escena
-			GetTree().Root.AddChild(projectile);
+			// Agregar al árbol de escena usando el nodo raíz
+			_sceneRoot.AddChild(projectile);
 		}
 	}
 }

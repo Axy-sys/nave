@@ -1,0 +1,102 @@
+@startuml MVC Pattern
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title MVC Pattern - Model View Controller
+
+' MODEL
+package "Models" {
+  class GameStateModel <<Model>> {
+    +CurrentLevel: int
+    +Score: int
+    +Difficulty: float
+    +CurrentState: GameState
+    +IncrementScore(points: int)
+    +IncrementLevel()
+    +ScaleDifficulty()
+    +Reset()
+  }
+  
+  class PlayerModel <<Model>> {
+    +Lives: int
+    +CurrentWeapon: WeaponType
+    +PowerUps: List<PowerUpType>
+    +AddLife()
+    +RemoveLife()
+    +SetWeapon(weapon: WeaponType)
+    +HasPowerUp(type: PowerUpType): bool
+  }
+}
+
+' CONTROLLER
+package "Core" {
+  class GameManager <<Controller + Singleton>> {
+    {static} +Instance: GameManager
+    -_gameState: GameStateModel
+    -_playerState: PlayerModel
+    +CurrentState: GameState
+    +StartGame()
+    +PauseGame()
+    +ResumeGame()
+    +GameOver()
+    +HandleEnemyDefeated(enemy: Node2D)
+    +HandlePlayerDamaged(damage: float)
+    +UpdateScore(points: int)
+  }
+}
+
+' VIEW
+package "Views" {
+  class GameHUD <<View>> {
+    -_scoreLabel: Label
+    -_healthBar: ProgressBar
+    -_livesLabel: Label
+    -_weaponLabel: Label
+    -_waveLabel: Label
+    +UpdateScore(score: int)
+    +UpdateHealth(current: float, max: float)
+    +UpdateLives(lives: int)
+    +UpdateWeapon(weapon: string)
+    +UpdateWave(wave: int)
+  }
+  
+  class QuizView <<View>> {
+    -_questionPanel: Panel
+    -_questionLabel: Label
+    -_optionButtons: List<Button>
+    +ShowQuestion(question: QuizQuestion)
+    +Hide()
+  }
+}
+
+' RELACIONES MVC
+GameManager --> GameStateModel : manipula
+GameManager --> PlayerModel : manipula
+GameHUD --> GameStateModel : observa
+GameHUD --> PlayerModel : observa
+GameManager --> GameHUD : actualiza
+GameManager --> QuizView : controla
+
+note right of GameManager
+  **CONTROLLER**
+  - Coordina Model y View
+  - Maneja lógica del juego
+  - Responde a eventos
+end note
+
+note left of GameStateModel
+  **MODEL**
+  - Solo contiene datos
+  - Sin lógica de UI
+  - Notifica cambios
+end note
+
+note bottom of GameHUD
+  **VIEW**
+  - Solo visualización
+  - Sin lógica de negocio
+  - Actualiza UI
+end note
+
+@enduml

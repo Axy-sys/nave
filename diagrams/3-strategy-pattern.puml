@@ -1,0 +1,105 @@
+@startuml Strategy Pattern
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title Strategy Pattern - Armas y AI Intercambiables
+
+' WEAPON STRATEGY
+interface IWeapon {
+  +Fire(position: Vector2, direction: Vector2)
+  +CanFire(): bool
+  +Reload()
+  +GetWeaponName(): string
+  +GetWeaponType(): WeaponType
+}
+
+abstract class BaseWeapon {
+  +Damage: float
+  +ProjectileSpeed: float
+  #_currentAmmo: int
+  #SpawnProjectile(position, direction, type)
+}
+
+class FirewallWeapon {
+  +Fire(position, direction)
+  +CanFire(): bool
+  +GetWeaponName(): "Firewall Básico"
+}
+
+class AntivirusWeapon {
+  -_burstCount: int = 3
+  +Fire(position, direction)
+  +Reload()
+  +GetWeaponName(): "Antivirus Scanner"
+}
+
+class EncryptionWeapon {
+  +Fire(position, direction)
+  +GetWeaponName(): "Cannon de Encriptación"
+}
+
+class HoneypotWeapon {
+  +Fire(position, direction)
+  +GetWeaponName(): "Honeypot Trap"
+}
+
+' AI STRATEGY
+abstract class BaseEnemyAI {
+  #_enemy: CharacterBody2D
+  #_target: Node2D
+  +Initialize(enemy, target)
+  +Update(delta: double) {abstract}
+  #FindTarget(): Node2D
+}
+
+class ChaseAI {
+  +Update(delta: double)
+  ' Persigue directamente al jugador
+}
+
+class ZigZagAI {
+  -_zigzagTimer: float
+  +Update(delta: double)
+  ' Movimiento en zigzag
+}
+
+class CircleAI {
+  -_circleRadius: float
+  +Update(delta: double)
+  ' Rodea al jugador
+}
+
+class WeaponComponent {
+  -_currentWeapon: IWeapon
+  +SetWeapon(weapon: IWeapon)
+  +TryFire(direction: Vector2)
+}
+
+IWeapon <|.. BaseWeapon
+BaseWeapon <|-- FirewallWeapon
+BaseWeapon <|-- AntivirusWeapon
+BaseWeapon <|-- EncryptionWeapon
+BaseWeapon <|-- HoneypotWeapon
+
+BaseEnemyAI <|-- ChaseAI
+BaseEnemyAI <|-- ZigZagAI
+BaseEnemyAI <|-- CircleAI
+
+WeaponComponent o--> IWeapon : usa estrategia
+
+note right of IWeapon
+  **STRATEGY PATTERN**
+  - Algoritmos intercambiables
+  - Open/Closed Principle
+  - Fácil agregar nuevas armas
+end note
+
+note bottom of BaseEnemyAI
+  **STRATEGY PATTERN**
+  - Diferentes comportamientos IA
+  - Cambiables en runtime
+  - Enemigos con personalidades únicas
+end note
+
+@enduml

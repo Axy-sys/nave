@@ -1,0 +1,108 @@
+@startuml Observer and Factory Patterns
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title Observer Pattern (EventBus) + Factory Pattern
+
+' OBSERVER PATTERN
+class GameEventBus <<Singleton + Observer>> {
+  {static} +Instance: GameEventBus
+  +EnemySpawned: Action<Node2D>
+  +EnemyDefeated: Action<Node2D>
+  +PlayerDamaged: Action<float>
+  +ScoreChanged: Action<int>
+  +WaveStarted: Action<int>
+  +PowerUpCollected: Action<PowerUpType>
+  +WeaponChanged: Action<WeaponType>
+  +QuizQuestionShown: Action<QuizQuestion>
+  +SecurityTipShown: Action<string>
+  +VulnerabilityDetected: Action<Vulnerability>
+}
+
+class GameManager <<Publisher>> {
+  +HandleEnemyDefeated(enemy)
+  +HandlePlayerDamaged(damage)
+  +UpdateScore(points)
+}
+
+class Player <<Publisher>> {
+  +TakeDamage(amount)
+}
+
+class WaveSystem <<Publisher>> {
+  +StartWave()
+}
+
+class GameHUD <<Subscriber>> {
+  +UpdateScore(score)
+  +UpdateHealth(current, max)
+  -SubscribeToEvents()
+}
+
+class QuizView <<Subscriber>> {
+  +ShowQuestion(question)
+  -SubscribeToEvents()
+}
+
+' FACTORY PATTERN
+class EnemyFactory <<Factory>> {
+  {static} -_enemyScenes: Dictionary
+  {static} +Initialize()
+  {static} +CreateEnemy(type, position): Enemy
+  {static} -GetEnemyStats(type): EnemyStats
+  {static} -CreateAIComponent(type): BaseEnemyAI
+}
+
+enum EnemyType {
+  Malware
+  Phishing
+  DDoS
+  SQLInjection
+  BruteForce
+  Ransomware
+  Trojan
+  Worm
+  Spyware
+  Adware
+}
+
+abstract class BaseEnemyAI {
+  +Update(delta)
+}
+
+class ChaseAI
+class ZigZagAI
+class CircleAI
+
+' Observer Relations
+GameEventBus <-- GameManager : publica eventos
+GameEventBus <-- Player : publica eventos
+GameEventBus <-- WaveSystem : publica eventos
+GameHUD --> GameEventBus : se suscribe
+QuizView --> GameEventBus : se suscribe
+
+' Factory Relations
+EnemyFactory ..> EnemyType : usa
+EnemyFactory --> BaseEnemyAI : crea
+BaseEnemyAI <|-- ChaseAI
+BaseEnemyAI <|-- ZigZagAI
+BaseEnemyAI <|-- CircleAI
+
+note right of GameEventBus
+  **OBSERVER PATTERN**
+  - Desacoplamiento total
+  - Comunicación async
+  - Múltiples suscriptores
+  - Single Responsibility
+end note
+
+note bottom of EnemyFactory
+  **FACTORY PATTERN**
+  - Centraliza creación
+  - Oculta complejidad
+  - Fácil agregar tipos
+  - Open/Closed Principle
+end note
+
+@enduml
