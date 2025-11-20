@@ -16,184 +16,202 @@ namespace CyberSecurityGame.Views
 		private ProgressBar _shieldBar;
 		private Label _livesLabel;
 		private Label _weaponLabel;
-		private Panel _tipPanel;
-		private Label _tipLabel;
-		private Timer _tipTimer;
+		private VBoxContainer _notificationContainer;
 		private Minimap _minimap;
+		
+		// Paneles de estado
+		private Panel _pausePanel;
+		private Panel _gameOverPanel;
 
 		public override void _Ready()
 		{
 			InitializeUI();
+			InitializeStatePanels();
 			SubscribeToEvents();
 		}
 
 		private void InitializeUI()
 		{
 			// Crear estructura UI programáticamente con mejor diseño
+			var viewportSize = GetViewport().GetVisibleRect().Size;
+
+			// 1. TOP LEFT: Score & Level (Data & Layer)
+			var infoPanel = new Panel();
+			infoPanel.Name = "InfoPanel";
+			infoPanel.Position = new Vector2(20, 20);
+			infoPanel.Size = new Vector2(200, 80);
 			
-			// Panel contenedor principal con fondo semi-transparente
-			var hudPanel = new Panel();
-			hudPanel.Name = "HUDPanel";
-			hudPanel.Position = new Vector2(10, 10);
-			hudPanel.Size = new Vector2(280, 220);
+			var terminalStyle = new StyleBoxFlat();
+			terminalStyle.BgColor = new Color(0, 0.05f, 0.1f, 0.9f);
+			terminalStyle.BorderColor = new Color(0, 1, 1, 0.5f);
+			terminalStyle.SetBorderWidthAll(1);
+			terminalStyle.SetCornerRadiusAll(5);
+			infoPanel.AddThemeStyleboxOverride("panel", terminalStyle);
+			AddChild(infoPanel);
 			
-			var panelStyle = new StyleBoxFlat();
-			panelStyle.BgColor = new Color(0, 0.1f, 0.15f, 0.85f);
-			panelStyle.BorderColor = new Color(0, 1, 1, 0.8f);
-			panelStyle.SetBorderWidthAll(2);
-			panelStyle.SetCornerRadiusAll(10);
-			panelStyle.ShadowColor = new Color(0, 1, 1, 0.3f);
-			panelStyle.ShadowSize = 5;
-			hudPanel.AddThemeStyleboxOverride("panel", panelStyle);
-			AddChild(hudPanel);
-			
-			// Score con glow
 			_scoreLabel = new Label();
-			_scoreLabel.Name = "ScoreLabel";
-			_scoreLabel.Position = new Vector2(15, 10);
+			_scoreLabel.Position = new Vector2(10, 10);
 			_scoreLabel.AddThemeColorOverride("font_color", Colors.White);
-			_scoreLabel.AddThemeColorOverride("font_shadow_color", new Color(0, 1, 1, 0.5f));
-			_scoreLabel.AddThemeConstantOverride("shadow_outline_size", 2);
-			_scoreLabel.AddThemeFontSizeOverride("font_size", 20);
-			hudPanel.AddChild(_scoreLabel);
+			_scoreLabel.AddThemeFontSizeOverride("font_size", 18);
+			infoPanel.AddChild(_scoreLabel);
 
-			// Level con efecto cyan
 			_levelLabel = new Label();
-			_levelLabel.Name = "LevelLabel";
-			_levelLabel.Position = new Vector2(15, 35);
+			_levelLabel.Position = new Vector2(10, 40);
 			_levelLabel.AddThemeColorOverride("font_color", new Color(0, 1, 1));
-			_levelLabel.AddThemeColorOverride("font_shadow_color", new Color(0, 1, 1, 0.8f));
-			_levelLabel.AddThemeConstantOverride("shadow_outline_size", 3);
-			_levelLabel.AddThemeFontSizeOverride("font_size", 18);
-			hudPanel.AddChild(_levelLabel);
+			_levelLabel.AddThemeFontSizeOverride("font_size", 16);
+			infoPanel.AddChild(_levelLabel);
 
-			// Lives con icono
+			// 2. TOP RIGHT: Lives (Backups)
+			var livesPanel = new Panel();
+			livesPanel.Position = new Vector2(viewportSize.X - 180, 20);
+			livesPanel.Size = new Vector2(160, 50);
+			livesPanel.AddThemeStyleboxOverride("panel", terminalStyle);
+			AddChild(livesPanel);
+
 			_livesLabel = new Label();
-			_livesLabel.Name = "LivesLabel";
-			_livesLabel.Position = new Vector2(15, 60);
+			_livesLabel.Position = new Vector2(10, 12);
 			_livesLabel.AddThemeColorOverride("font_color", new Color(1, 0.3f, 0.3f));
-			_livesLabel.AddThemeColorOverride("font_shadow_color", new Color(1, 0, 0, 0.5f));
-			_livesLabel.AddThemeConstantOverride("shadow_outline_size", 2);
 			_livesLabel.AddThemeFontSizeOverride("font_size", 18);
-			hudPanel.AddChild(_livesLabel);
+			livesPanel.AddChild(_livesLabel);
 
-			// Label para Health
+			// 3. BOTTOM CENTER: Status (Health & Shield)
+			var statusPanel = new Panel();
+			statusPanel.Position = new Vector2((viewportSize.X - 400) / 2, viewportSize.Y - 80);
+			statusPanel.Size = new Vector2(400, 70);
+			statusPanel.AddThemeStyleboxOverride("panel", terminalStyle);
+			AddChild(statusPanel);
+
+			// Health Bar
 			var healthLabel = new Label();
-			healthLabel.Position = new Vector2(15, 85);
-			healthLabel.Text = "💚 SALUD";
+			healthLabel.Text = "INTEGRIDAD";
+			healthLabel.Position = new Vector2(10, 5);
 			healthLabel.AddThemeColorOverride("font_color", new Color(0, 1, 0.5f));
-			healthLabel.AddThemeFontSizeOverride("font_size", 14);
-			hudPanel.AddChild(healthLabel);
+			healthLabel.AddThemeFontSizeOverride("font_size", 12);
+			statusPanel.AddChild(healthLabel);
 
-			// Health Bar mejorada
 			_healthBar = new ProgressBar();
-			_healthBar.Name = "HealthBar";
-			_healthBar.Position = new Vector2(15, 105);
-			_healthBar.Size = new Vector2(250, 25);
-			_healthBar.MaxValue = 100;
-			_healthBar.Value = 100;
-			_healthBar.ShowPercentage = true;
+			_healthBar.Position = new Vector2(10, 25);
+			_healthBar.Size = new Vector2(380, 15);
+			_healthBar.ShowPercentage = false;
 			
-			var healthStyle = new StyleBoxFlat();
-			healthStyle.BgColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-			healthStyle.BorderColor = new Color(0, 1, 0.5f);
-			healthStyle.SetBorderWidthAll(2);
-			healthStyle.SetCornerRadiusAll(5);
-			_healthBar.AddThemeStyleboxOverride("background", healthStyle);
-			
-			var healthFill = new StyleBoxFlat();
-			healthFill.BgColor = new Color(0, 1, 0.5f);
-			healthFill.SetCornerRadiusAll(5);
+			var healthBg = new StyleBoxFlat { BgColor = new Color(0.1f, 0.1f, 0.1f), CornerRadiusTopLeft = 2, CornerRadiusTopRight = 2, CornerRadiusBottomRight = 2, CornerRadiusBottomLeft = 2 };
+			var healthFill = new StyleBoxFlat { BgColor = new Color(0, 1, 0.5f), CornerRadiusTopLeft = 2, CornerRadiusTopRight = 2, CornerRadiusBottomRight = 2, CornerRadiusBottomLeft = 2 };
+			_healthBar.AddThemeStyleboxOverride("background", healthBg);
 			_healthBar.AddThemeStyleboxOverride("fill", healthFill);
-			hudPanel.AddChild(_healthBar);
+			statusPanel.AddChild(_healthBar);
 
-			// Shield Bar mejorada
-			var shieldLabel = new Label();
-			shieldLabel.Name = "ShieldLabel";
-			shieldLabel.Position = new Vector2(15, 135);
-			shieldLabel.Text = "🛡️ ESCUDO";
-			shieldLabel.AddThemeColorOverride("font_color", new Color(0, 0.7f, 1));
-			shieldLabel.AddThemeFontSizeOverride("font_size", 14);
-			shieldLabel.Visible = false;
-			hudPanel.AddChild(shieldLabel);
-			
+			// Shield Bar
 			_shieldBar = new ProgressBar();
-			_shieldBar.Name = "ShieldBar";
-			_shieldBar.Position = new Vector2(15, 155);
-			_shieldBar.Size = new Vector2(250, 25);
-			_shieldBar.MaxValue = 100;
-			_shieldBar.Value = 0;
-			_shieldBar.ShowPercentage = true;
-			_shieldBar.Visible = false;
+			_shieldBar.Position = new Vector2(10, 45);
+			_shieldBar.Size = new Vector2(380, 10);
+			_shieldBar.ShowPercentage = false;
+			_shieldBar.Visible = false; // Hidden by default
 			
-			var shieldStyle = new StyleBoxFlat();
-			shieldStyle.BgColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-			shieldStyle.BorderColor = new Color(0, 0.7f, 1);
-			shieldStyle.SetBorderWidthAll(2);
-			shieldStyle.SetCornerRadiusAll(5);
-			_shieldBar.AddThemeStyleboxOverride("background", shieldStyle);
-			
-			var shieldFill = new StyleBoxFlat();
-			shieldFill.BgColor = new Color(0, 0.7f, 1);
-			shieldFill.SetCornerRadiusAll(5);
+			var shieldFill = new StyleBoxFlat { BgColor = new Color(0, 0.7f, 1), CornerRadiusTopLeft = 2, CornerRadiusTopRight = 2, CornerRadiusBottomRight = 2, CornerRadiusBottomLeft = 2 };
+			_shieldBar.AddThemeStyleboxOverride("background", healthBg);
 			_shieldBar.AddThemeStyleboxOverride("fill", shieldFill);
-			hudPanel.AddChild(_shieldBar);
+			statusPanel.AddChild(_shieldBar);
 
-			// Weapon Label mejorado (bottom right)
+			// 4. BOTTOM RIGHT: Weapon
 			var weaponPanel = new Panel();
-			weaponPanel.Name = "WeaponPanel";
-			weaponPanel.Position = new Vector2(920, 650);
-			weaponPanel.Size = new Vector2(260, 70);
-			
-			var weaponStyle = new StyleBoxFlat();
-			weaponStyle.BgColor = new Color(0, 0.1f, 0.15f, 0.85f);
-			weaponStyle.BorderColor = new Color(1, 0.8f, 0);
-			weaponStyle.SetBorderWidthAll(2);
-			weaponStyle.SetCornerRadiusAll(10);
-			weaponStyle.ShadowColor = new Color(1, 0.8f, 0, 0.3f);
-			weaponStyle.ShadowSize = 5;
-			weaponPanel.AddThemeStyleboxOverride("panel", weaponStyle);
+			weaponPanel.Position = new Vector2(viewportSize.X - 220, viewportSize.Y - 70);
+			weaponPanel.Size = new Vector2(200, 50);
+			weaponPanel.AddThemeStyleboxOverride("panel", terminalStyle);
 			AddChild(weaponPanel);
 			
 			_weaponLabel = new Label();
-			_weaponLabel.Name = "WeaponLabel";
-			_weaponLabel.Position = new Vector2(15, 20);
+			_weaponLabel.Position = new Vector2(10, 12);
 			_weaponLabel.AddThemeColorOverride("font_color", new Color(1, 0.9f, 0));
-			_weaponLabel.AddThemeColorOverride("font_shadow_color", new Color(1, 0.8f, 0, 0.8f));
-			_weaponLabel.AddThemeConstantOverride("shadow_outline_size", 3);
-			_weaponLabel.AddThemeFontSizeOverride("font_size", 22);
+			_weaponLabel.AddThemeFontSizeOverride("font_size", 16);
 			weaponPanel.AddChild(_weaponLabel);
 
-			// Tip Panel
-			_tipPanel = new Panel();
-			_tipPanel.Name = "TipPanel";
-			_tipPanel.Position = new Vector2(300, 500);
-			_tipPanel.Size = new Vector2(400, 80);
-			_tipPanel.Visible = false;
-			AddChild(_tipPanel);
-
-			_tipLabel = new Label();
-			_tipLabel.Name = "TipLabel";
-			_tipLabel.Position = new Vector2(10, 10);
-			_tipLabel.Size = new Vector2(380, 60);
-			_tipLabel.AutowrapMode = TextServer.AutowrapMode.Word;
-			_tipPanel.AddChild(_tipLabel);
-
-			_tipTimer = new Timer();
-			_tipTimer.Name = "TipTimer";
-			_tipTimer.WaitTime = 5.0;
-			_tipTimer.OneShot = true;
-			_tipTimer.Timeout += HideTip;
-			AddChild(_tipTimer);
-
-			// Minimap integrado en el HUD
+			// 5. BOTTOM LEFT: Minimap
 			_minimap = new Minimap();
 			_minimap.Name = "Minimap";
+			_minimap.Position = new Vector2(100, viewportSize.Y - 100); // Bottom Left
 			_minimap.DetectionRadius = 600f;
-			_minimap.MinimapSize = 180f;
+			_minimap.MinimapSize = 150f;
 			AddChild(_minimap);
 
+			// 6. NOTIFICATION SYSTEM (Toast Style - Top Right, below Lives)
+			_notificationContainer = new VBoxContainer();
+			_notificationContainer.Name = "NotificationContainer";
+			_notificationContainer.Position = new Vector2(viewportSize.X - 320, 80);
+			_notificationContainer.Size = new Vector2(300, 0); // Height grows automatically
+			_notificationContainer.AddThemeConstantOverride("separation", 10);
+			AddChild(_notificationContainer);
+
 			UpdateUI(0, 1, 100, 0, 3, "Firewall");
+		}
+
+		private void InitializeStatePanels()
+		{
+			// Estilo común de terminal
+			var terminalStyle = new StyleBoxFlat();
+			terminalStyle.BgColor = new Color(0.05f, 0.05f, 0.05f, 0.95f);
+			terminalStyle.BorderColor = new Color(0, 1, 0);
+			terminalStyle.SetBorderWidthAll(2);
+			terminalStyle.SetCornerRadiusAll(4);
+			terminalStyle.ShadowColor = new Color(0, 1, 0, 0.2f);
+			terminalStyle.ShadowSize = 10;
+
+			// Panel de Pausa
+			_pausePanel = new Panel();
+			_pausePanel.Name = "PausePanel";
+			_pausePanel.Size = new Vector2(400, 200);
+			_pausePanel.Position = new Vector2(
+				(GetViewport().GetVisibleRect().Size.X - 400) / 2,
+				(GetViewport().GetVisibleRect().Size.Y - 200) / 2
+			);
+			_pausePanel.AddThemeStyleboxOverride("panel", terminalStyle);
+			_pausePanel.Visible = false;
+			AddChild(_pausePanel);
+
+			var pauseLabel = new Label();
+			pauseLabel.Text = "> SYSTEM_PAUSED";
+			pauseLabel.HorizontalAlignment = HorizontalAlignment.Center;
+			pauseLabel.VerticalAlignment = VerticalAlignment.Center;
+			pauseLabel.Size = new Vector2(400, 200);
+			pauseLabel.AddThemeColorOverride("font_color", new Color(0, 1, 0));
+			pauseLabel.AddThemeFontSizeOverride("font_size", 32);
+			_pausePanel.AddChild(pauseLabel);
+
+			// Panel de Game Over
+			_gameOverPanel = new Panel();
+			_gameOverPanel.Name = "GameOverPanel";
+			_gameOverPanel.Size = new Vector2(500, 300);
+			_gameOverPanel.Position = new Vector2(
+				(GetViewport().GetVisibleRect().Size.X - 500) / 2,
+				(GetViewport().GetVisibleRect().Size.Y - 300) / 2
+			);
+			_gameOverPanel.AddThemeStyleboxOverride("panel", terminalStyle);
+			_gameOverPanel.Visible = false;
+			AddChild(_gameOverPanel);
+
+			var gameOverVBox = new VBoxContainer();
+			gameOverVBox.Size = new Vector2(500, 300);
+			gameOverVBox.Alignment = BoxContainer.AlignmentMode.Center;
+			_gameOverPanel.AddChild(gameOverVBox);
+
+			var gameOverLabel = new Label();
+			gameOverLabel.Text = "CRITICAL_SYSTEM_FAILURE";
+			gameOverLabel.HorizontalAlignment = HorizontalAlignment.Center;
+			gameOverLabel.AddThemeColorOverride("font_color", new Color(1, 0, 0));
+			gameOverLabel.AddThemeFontSizeOverride("font_size", 36);
+			gameOverVBox.AddChild(gameOverLabel);
+
+			var restartLabel = new Label();
+			restartLabel.Text = "Press R to Reboot System\nPress ESC to Abort";
+			restartLabel.HorizontalAlignment = HorizontalAlignment.Center;
+			restartLabel.AddThemeColorOverride("font_color", new Color(0, 1, 0));
+			restartLabel.AddThemeFontSizeOverride("font_size", 18);
+			gameOverVBox.AddChild(restartLabel);
+		}
+
+		private void OnGameStateChanged(Core.GameState newState)
+		{
+			if (_pausePanel != null) _pausePanel.Visible = newState == Core.GameState.Paused;
+			if (_gameOverPanel != null) _gameOverPanel.Visible = newState == Core.GameState.GameOver;
 		}
 
 		private void SubscribeToEvents()
@@ -203,13 +221,14 @@ namespace CyberSecurityGame.Views
 			GameEventBus.Instance.OnSecurityTipShown += ShowTip;
 			GameEventBus.Instance.OnLevelStarted += UpdateLevel;
 			GameEventBus.Instance.OnShieldActivated += OnShieldActivated;
+			GameEventBus.Instance.OnGameStateChanged += OnGameStateChanged;
 		}
 
 		private void UpdateScore(int score)
 		{
 			if (_scoreLabel != null)
 			{
-				_scoreLabel.Text = $"Score: {score}";
+				_scoreLabel.Text = $"Datos: {score}MB";
 			}
 		}
 
@@ -225,7 +244,7 @@ namespace CyberSecurityGame.Views
 		{
 			if (_levelLabel != null)
 			{
-				_levelLabel.Text = $"Nivel: {level}";
+				_levelLabel.Text = $"Capa: {level}";
 			}
 		}
 
@@ -240,29 +259,57 @@ namespace CyberSecurityGame.Views
 
 		private void ShowTip(string tip)
 		{
-			if (_tipPanel != null && _tipLabel != null)
-			{
-				_tipLabel.Text = tip;
-				_tipPanel.Visible = true;
-				_tipTimer.Start();
-			}
+			if (_notificationContainer == null) return;
+
+			// Crear notificación tipo Toast
+			var notifPanel = new PanelContainer();
+			var style = new StyleBoxFlat();
+			style.BgColor = new Color(0, 0, 0, 0.8f);
+			style.BorderColor = new Color(0, 1, 0);
+			style.SetBorderWidthAll(1);
+			style.SetCornerRadiusAll(4);
+			notifPanel.AddThemeStyleboxOverride("panel", style);
+			
+			var vbox = new VBoxContainer();
+			notifPanel.AddChild(vbox);
+			
+			var title = new Label();
+			title.Text = "> INCOMING_MSG";
+			title.AddThemeColorOverride("font_color", new Color(0, 1, 0));
+			title.AddThemeFontSizeOverride("font_size", 10);
+			vbox.AddChild(title);
+			
+			var msg = new Label();
+			msg.Text = tip;
+			msg.AutowrapMode = TextServer.AutowrapMode.Word;
+			msg.CustomMinimumSize = new Vector2(280, 0);
+			msg.AddThemeColorOverride("font_color", Colors.White);
+			msg.AddThemeFontSizeOverride("font_size", 14);
+			vbox.AddChild(msg);
+			
+			_notificationContainer.AddChild(notifPanel);
+			
+			// Animación de entrada
+			notifPanel.Modulate = new Color(1, 1, 1, 0);
+			var tween = CreateTween();
+			tween.TweenProperty(notifPanel, "modulate:a", 1.0f, 0.3f);
+			tween.TweenInterval(4.0f); // Esperar
+			tween.TweenProperty(notifPanel, "modulate:a", 0.0f, 0.5f); // Desvanecer
+			tween.TweenCallback(Callable.From(notifPanel.QueueFree)); // Destruir
 		}
 
 		private void HideTip()
 		{
-			if (_tipPanel != null)
-			{
-				_tipPanel.Visible = false;
-			}
+			// Deprecated by Toast system
 		}
 
 		public void UpdateUI(int score, int level, float health, float shield, int lives, string weapon)
 		{
 			if (_scoreLabel != null)
-				_scoreLabel.Text = $"Score: {score}";
+				_scoreLabel.Text = $"Datos: {score}MB";
 			
 			if (_levelLabel != null)
-				_levelLabel.Text = $"Nivel: {level}";
+				_levelLabel.Text = $"Capa: {level}";
 			
 			if (_healthBar != null)
 				_healthBar.Value = health;
@@ -274,10 +321,10 @@ namespace CyberSecurityGame.Views
 			}
 			
 			if (_livesLabel != null)
-				_livesLabel.Text = $"Vidas: {lives}";
+				_livesLabel.Text = $"Backups: {lives}";
 			
 			if (_weaponLabel != null)
-				_weaponLabel.Text = $"Arma: {weapon}";
+				_weaponLabel.Text = $"Protocolo: {weapon}";
 		}
 
 		public override void _ExitTree()
@@ -287,6 +334,7 @@ namespace CyberSecurityGame.Views
 			GameEventBus.Instance.OnSecurityTipShown -= ShowTip;
 			GameEventBus.Instance.OnLevelStarted -= UpdateLevel;
 			GameEventBus.Instance.OnShieldActivated -= OnShieldActivated;
+			GameEventBus.Instance.OnGameStateChanged -= OnGameStateChanged;
 		}
 	}
 }

@@ -35,11 +35,41 @@ namespace CyberSecurityGame.Entities
 			// Por ahora creamos una instancia genérica
 			var enemy = new CharacterBody2D();
 			enemy.Name = type.ToString();
+			enemy.CollisionLayer = 4; // Capa de enemigos
+			enemy.CollisionMask = 3;  // Jugador y Proyectiles
 			
+			// Añadir Sprite
+			var sprite = new Sprite2D();
+			sprite.Texture = GD.Load<Texture2D>("res://Assets/enemy_bug.svg");
+			sprite.Modulate = GetEnemyColor(type);
+			sprite.Scale = new Vector2(0.8f, 0.8f);
+			enemy.AddChild(sprite);
+
+			// Añadir Colisión
+			var collision = new CollisionShape2D();
+			var shape = new CircleShape2D();
+			shape.Radius = 20f;
+			collision.Shape = shape;
+			enemy.AddChild(collision);
+
 			// Añadir componentes según el tipo
 			AddComponents(enemy, type);
 			
 			return enemy;
+		}
+
+		private static Color GetEnemyColor(EnemyType type)
+		{
+			return type switch
+			{
+				EnemyType.Malware => new Color(1, 0, 0), // Rojo
+				EnemyType.Phishing => new Color(1, 0.5f, 0), // Naranja
+				EnemyType.DDoS => new Color(0.5f, 0, 1), // Morado
+				EnemyType.SQLInjection => new Color(1, 1, 0), // Amarillo
+				EnemyType.BruteForce => new Color(0.5f, 0, 0), // Rojo oscuro
+				EnemyType.Ransomware => new Color(0, 0, 0), // Negro (Boss)
+				_ => new Color(1, 1, 1)
+			};
 		}
 
 		private static void AddComponents(Node2D enemy, EnemyType type)

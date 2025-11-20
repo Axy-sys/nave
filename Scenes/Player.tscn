@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://dqvjxw8r57cv7"]
 
 [ext_resource type="Script" uid="uid://bkiuu12716lvs" path="res://Scripts/Entities/Player.cs" id="1_player"]
-[ext_resource type="Texture2D" uid="uid://lyoj6nw3qnfi" path="res://Assets/player_ship.svg" id="2_sprite"]
+[ext_resource type="Texture2D" uid="uid://cb08v1gpdaxmi" path="res://Assets/player_security_node.svg" id="2_kyqiw"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 20.0
@@ -12,10 +12,9 @@ collision_mask = 6
 script = ExtResource("1_player")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-z_index = 10
 modulate = Color(0, 1, 1, 1)
-texture = ExtResource("2_sprite")
-scale = Vector2(2, 2)
+z_index = 10
+texture = ExtResource("2_kyqiw")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_player")

@@ -12,70 +12,70 @@ blend_mode = 1
 [node name="BaseBackground" type="ColorRect" parent="."]
 offset_right = 1200.0
 offset_bottom = 800.0
-color = Color(0, 0.05, 0.1, 1)
+color = Color(0, 0.02, 0.05, 1)
 
 [node name="GridLines" type="Node2D" parent="."]
-modulate = Color(0, 0.4, 0.6, 0.2)
+modulate = Color(0, 1, 0.8, 0.3)
 
 [node name="Horizontal1" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(0, 100, 1200, 100)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Horizontal2" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(0, 200, 1200, 200)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Horizontal3" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(0, 300, 1200, 300)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Horizontal4" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(0, 400, 1200, 400)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Horizontal5" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(0, 500, 1200, 500)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Horizontal6" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(0, 600, 1200, 600)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Horizontal7" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(0, 700, 1200, 700)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Vertical1" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(200, 0, 200, 800)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Vertical2" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(400, 0, 400, 800)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Vertical3" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(600, 0, 600, 800)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Vertical4" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(800, 0, 800, 800)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="Vertical5" type="Line2D" parent="GridLines"]
 points = PackedVector2Array(1000, 0, 1000, 800)
 width = 1.0
-default_color = Color(0, 0.6, 0.8, 0.3)
+default_color = Color(0, 0.8, 1, 0.4)
 
 [node name="StarField" type="CPUParticles2D" parent="."]
 material = SubResource("CanvasItemMaterial_additive")

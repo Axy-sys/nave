@@ -35,6 +35,7 @@ namespace CyberSecurityGame.Core.Events
 		public event Action<string> OnSecurityTipShown;
 		public event Action<string> OnVulnerabilityDetected;
 		public event Action<string> OnThreatNeutralized;
+		public event Action<string, string, string> OnNewEnemyEncountered; // Name, Description, Weakness
 		
 		// Eventos de power-ups
 		public event Action<string> OnPowerUpCollected;
@@ -42,8 +43,12 @@ namespace CyberSecurityGame.Core.Events
 		
 		// Eventos de nivel
 		public event Action<int> OnLevelStarted;
+		public event Action<int, string, string> OnWaveAnnounced; // Wave, Title, Description
 		public event Action<int> OnLevelCompleted;
 		public event Action<string> OnBossSpawned;
+		
+		// Eventos de estado de juego
+		public event Action<GameState> OnGameStateChanged;
 
 		public void EmitPlayerHealthChanged(float health)
 		{
@@ -90,6 +95,11 @@ namespace CyberSecurityGame.Core.Events
 			OnThreatNeutralized?.Invoke(threat);
 		}
 
+		public void EmitNewEnemyEncountered(string name, string description, string weakness)
+		{
+			OnNewEnemyEncountered?.Invoke(name, description, weakness);
+		}
+
 		public void EmitPowerUpCollected(string powerUpType)
 		{
 			OnPowerUpCollected?.Invoke(powerUpType);
@@ -105,6 +115,11 @@ namespace CyberSecurityGame.Core.Events
 			OnLevelStarted?.Invoke(level);
 		}
 
+		public void EmitWaveAnnounced(int wave, string title, string description)
+		{
+			OnWaveAnnounced?.Invoke(wave, title, description);
+		}
+
 		public void EmitLevelCompleted(int level)
 		{
 			OnLevelCompleted?.Invoke(level);
@@ -113,6 +128,11 @@ namespace CyberSecurityGame.Core.Events
 		public void EmitBossSpawned(string bossName)
 		{
 			OnBossSpawned?.Invoke(bossName);
+		}
+
+		public void EmitGameStateChanged(GameState newState)
+		{
+			OnGameStateChanged?.Invoke(newState);
 		}
 	}
 }

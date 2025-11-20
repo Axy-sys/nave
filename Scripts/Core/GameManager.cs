@@ -70,6 +70,7 @@ namespace CyberSecurityGame.Core
 			
 			_playerModel.Reset(100f, StartingLives);
 			GameEventBus.Instance.EmitLevelStarted(CurrentLevel);
+			GameEventBus.Instance.EmitGameStateChanged(CurrentState);
 			
 			GD.Print("Juego iniciado - Nivel ", CurrentLevel);
 		}
@@ -80,6 +81,7 @@ namespace CyberSecurityGame.Core
 			{
 				CurrentState = GameState.Paused;
 				GetTree().Paused = true;
+				GameEventBus.Instance.EmitGameStateChanged(CurrentState);
 			}
 		}
 
@@ -89,12 +91,14 @@ namespace CyberSecurityGame.Core
 			{
 				CurrentState = GameState.Playing;
 				GetTree().Paused = false;
+				GameEventBus.Instance.EmitGameStateChanged(CurrentState);
 			}
 		}
 
 		public void GameOver()
 		{
 			CurrentState = GameState.GameOver;
+			GameEventBus.Instance.EmitGameStateChanged(CurrentState);
 			GD.Print("Game Over - Puntuación final: ", Score);
 			// Aquí se podría guardar high scores, etc.
 		}

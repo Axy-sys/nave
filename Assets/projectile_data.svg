@@ -1,0 +1,7 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#00FF00">
+    <!-- Data Packet / Code Block -->
+    <rect x="8" y="4" width="16" height="24" rx="2" fill-opacity="0.8"/>
+    <path d="M12 10 H20 M12 16 H20 M12 22 H16" stroke="#003300" stroke-width="2"/>
+  </g>
+</svg>

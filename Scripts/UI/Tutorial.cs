@@ -45,14 +45,39 @@ public partial class Tutorial : Node2D
 		// TutorialUI es un CanvasLayer, no un Control
 		var tutorialUILayer = GetNode<CanvasLayer>("TutorialUI");
 		_overlay = tutorialUILayer.GetNode<Panel>("Overlay");
+		_overlay.Visible = false; // Hacer overlay invisible para no obstruir visión
 		
 		var instructionBox = tutorialUILayer.GetNode<PanelContainer>("InstructionBox");
+		
+		// Reposicionar InstructionBox al fondo (Bottom Center)
+		// Usamos AnchorsPreset.BottomCenter si fuera posible, pero aquí lo hacemos manual o via propiedades
+		instructionBox.SetAnchorsPreset(Control.LayoutPreset.CenterBottom);
+		instructionBox.Position = new Vector2((GetViewportRect().Size.X - 800) / 2, GetViewportRect().Size.Y - 220);
+		instructionBox.Size = new Vector2(800, 150);
+		
+		// Estilo Terminal para la caja de instrucciones
+		var terminalStyle = new StyleBoxFlat();
+		terminalStyle.BgColor = new Color(0.05f, 0.05f, 0.05f, 0.8f); // Negro terminal semi-transparente
+		terminalStyle.BorderColor = new Color(0, 1, 1); // Borde Cyan
+		terminalStyle.SetBorderWidthAll(2);
+		terminalStyle.SetCornerRadiusAll(4);
+		terminalStyle.ShadowColor = new Color(0, 1, 1, 0.1f);
+		terminalStyle.ShadowSize = 5;
+		instructionBox.AddThemeStyleboxOverride("panel", terminalStyle);
+
 		var vbox = instructionBox.GetNode<VBoxContainer>("VBox");
 		
 		_stepLabel = vbox.GetNode<Label>("StepLabel");
+		_stepLabel.AddThemeColorOverride("font_color", new Color(0, 1, 1)); // Cyan
+		
 		_titleLabel = vbox.GetNode<Label>("TitleLabel");
+		_titleLabel.AddThemeColorOverride("font_color", Colors.White); 
+		
 		_instructionLabel = vbox.GetNode<Label>("InstructionLabel");
+		_instructionLabel.AddThemeColorOverride("font_color", new Color(0.8f, 0.9f, 1));
+		
 		_progressLabel = vbox.GetNode<Label>("ProgressLabel");
+		_progressLabel.AddThemeColorOverride("font_color", new Color(1, 1, 0)); // Amarillo info
 		
 		_arrowUp = tutorialUILayer.GetNode<Label>("ArrowUp");
 		_arrowDown = tutorialUILayer.GetNode<Label>("ArrowDown");
@@ -60,6 +85,16 @@ public partial class Tutorial : Node2D
 		_arrowRight = tutorialUILayer.GetNode<Label>("ArrowRight");
 		_highlightPanel = tutorialUILayer.GetNode<Panel>("HighlightPanel");
 		
+		// Estilo botón saltar (Top Right)
+		var skipButton = tutorialUILayer.GetNode<Button>("SkipButton");
+		skipButton.Position = new Vector2(GetViewportRect().Size.X - 160, 20);
+		var btnStyle = new StyleBoxFlat();
+		btnStyle.BgColor = new Color(0, 0, 0, 0.5f);
+		btnStyle.BorderColor = new Color(1, 0, 0); // Rojo para salir
+		btnStyle.SetBorderWidthAll(1);
+		skipButton.AddThemeStyleboxOverride("normal", btnStyle);
+		skipButton.AddThemeColorOverride("font_color", new Color(1, 0.5f, 0.5f));
+
 		_stepTimer = new Timer();
 		AddChild(_stepTimer);
 		_stepTimer.WaitTime = 0.5f;

@@ -207,6 +207,11 @@ namespace CyberSecurityGame.Entities
 			_weaponComponent?.SetWeapon(newWeapon);
 		}
 
+		public void Heal(float amount)
+		{
+			_healthComponent?.Heal(amount);
+		}
+
 		public float GetHealth() => _healthComponent?.GetCurrentHealth() ?? 0f;
 		public bool IsAlive() => _healthComponent?.IsAlive() ?? false;
 	}

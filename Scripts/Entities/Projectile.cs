@@ -16,26 +16,35 @@ namespace CyberSecurityGame.Entities
 		private float _lifetime = 5f;
 		private float _timer = 0f;
 
-		public void Initialize(Vector2 direction, float speed, float damage, DamageType damageType)
+		public void Initialize(Vector2 direction, float speed, float damage, int damageType)
 		{
 			_direction = direction.Normalized();
 			_speed = speed;
 			_damage = damage;
-			_damageType = damageType;
+			_damageType = (DamageType)damageType;
 
 			// Rotar sprite hacia dirección
 			Rotation = direction.Angle();
 
-			// Setup colisión
-			var collision = new CollisionShape2D();
-			var shape = new CircleShape2D();
-			shape.Radius = 5f;
-			collision.Shape = shape;
-			AddChild(collision);
+			// Setup colisión - Usamos la forma ya existente en la escena si es posible
+			if (GetNodeOrNull<CollisionShape2D>("CollisionShape2D") == null)
+			{
+				var collision = new CollisionShape2D();
+				var shape = new CircleShape2D();
+				shape.Radius = 5f;
+				collision.Shape = shape;
+				AddChild(collision);
+			}
 
 			// Conectar señales
-			BodyEntered += OnBodyEntered;
-			AreaEntered += OnAreaEntered;
+			if (!IsConnected(SignalName.BodyEntered, Callable.From<Node2D>(OnBodyEntered)))
+			{
+				BodyEntered += OnBodyEntered;
+			}
+			if (!IsConnected(SignalName.AreaEntered, Callable.From<Area2D>(OnAreaEntered)))
+			{
+				AreaEntered += OnAreaEntered;
+			}
 		}
 
 		public override void _Process(double delta)
