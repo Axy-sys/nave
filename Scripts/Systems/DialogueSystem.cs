@@ -30,7 +30,7 @@ namespace CyberSecurityGame.Systems
             _dialogueQueue.Enqueue(new DialogueLine(speaker, text, duration));
             if (!_isDialogueActive)
             {
-                ShowNextLine();
+                StartDialogueSequence();
             }
         }
 
@@ -42,28 +42,47 @@ namespace CyberSecurityGame.Systems
             }
             if (!_isDialogueActive)
             {
-                ShowNextLine();
+                StartDialogueSequence();
             }
+        }
+
+        private void StartDialogueSequence()
+        {
+            _isDialogueActive = true;
+            Engine.TimeScale = 0.1f; // Matrix/Hacker slow motion effect
+            ShowNextLine();
         }
 
         private async void ShowNextLine()
         {
             if (_dialogueQueue.Count == 0)
             {
-                _isDialogueActive = false;
-                EmitSignal(SignalName.DialogueEnded);
+                EndDialogueSequence();
                 return;
             }
 
-            _isDialogueActive = true;
             var line = _dialogueQueue.Dequeue();
             
             EmitSignal(SignalName.DialogueStarted, line.Speaker, line.Text);
 
-            // Wait for duration or input (simplified to duration for flow)
-            await ToSignal(GetTree().CreateTimer(line.Duration), "timeout");
+            // Wait for duration (adjusted for TimeScale)
+            // Since TimeScale is 0.1, a 3s timer will take 30s real time if we use SceneTreeTimer without ignoring time scale.
+            // We must use ProcessAlways or ignore time scale?
+            // GetTree().CreateTimer(duration, false) -> false means respect time scale.
+            // We want the dialogue to last 3 seconds REAL time.
+            // So we should use CreateTimer(duration, true, false, true) -> ignore_time_scale = true.
+            // In Godot 4 C#: CreateTimer(timeSec, processAlways, processInPhysics, ignoreTimeScale)
+            
+            await ToSignal(GetTree().CreateTimer(line.Duration, true, false, true), "timeout");
 
             ShowNextLine();
+        }
+
+        private void EndDialogueSequence()
+        {
+            _isDialogueActive = false;
+            Engine.TimeScale = 1.0f; // Restore normal speed
+            EmitSignal(SignalName.DialogueEnded);
         }
     }
 

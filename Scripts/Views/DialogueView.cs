@@ -24,59 +24,81 @@ namespace CyberSecurityGame.Views
 
         private void SetupUI()
         {
-            _container = new Control();
-            _container.SetAnchorsPreset(Control.LayoutPreset.BottomWide);
-            _container.Position = new Vector2(0, -20); // Slight offset
-            AddChild(_container);
-
-            // Panel Background (Bubble style)
+            // Main Container Panel
             var panel = new Panel();
-            panel.CustomMinimumSize = new Vector2(600, 150);
-            panel.SetAnchorsPreset(Control.LayoutPreset.CenterBottom);
-            panel.GrowHorizontal = Control.GrowDirection.Both;
-            panel.GrowVertical = Control.GrowDirection.Begin;
-            // Simple stylebox
+            _container = panel; // Use panel as the main container reference
+            
+            // Anchor Top Wide (Below Top Bar)
+            // This ensures it doesn't cover the player at the bottom
+            panel.AnchorLeft = 0;
+            panel.AnchorTop = 0;
+            panel.AnchorRight = 1;
+            panel.AnchorBottom = 0;
+            panel.OffsetLeft = 100; // Margin from left
+            panel.OffsetTop = 70; // Below Top Bar (60px)
+            panel.OffsetRight = -100; // Margin from right
+            panel.OffsetBottom = 230; // Height 160px
+
+            // Style
             var style = new StyleBoxFlat();
-            style.BgColor = new Color(0, 0, 0, 0.8f);
-            style.CornerRadiusTopLeft = 20;
-            style.CornerRadiusTopRight = 20;
-            style.CornerRadiusBottomLeft = 20;
-            style.CornerRadiusBottomRight = 20;
+            style.BgColor = new Color(0.02f, 0.02f, 0.02f, 0.95f); // Deep Black
+            style.CornerRadiusTopLeft = 8;
+            style.CornerRadiusTopRight = 8;
+            style.CornerRadiusBottomLeft = 8;
+            style.CornerRadiusBottomRight = 8;
             style.BorderWidthBottom = 2;
             style.BorderWidthTop = 2;
             style.BorderWidthLeft = 2;
             style.BorderWidthRight = 2;
-            style.BorderColor = new Color(0, 1, 0); // Hacker Green
+            style.BorderColor = new Color("bf00ff"); // Rippier Purple
+            style.ShadowColor = new Color("bf00ff");
+            style.ShadowSize = 10;
             panel.AddThemeStyleboxOverride("panel", style);
-            _container.AddChild(panel);
+            AddChild(panel);
 
-            // Portrait Placeholder
+            // Portrait
             _portrait = new TextureRect();
-            _portrait.Position = new Vector2(20, -80); // Above the box
-            _portrait.Size = new Vector2(80, 80);
+            // Anchor Left Center inside the panel
+            _portrait.AnchorLeft = 0;
+            _portrait.AnchorTop = 0.5f;
+            _portrait.AnchorRight = 0;
+            _portrait.AnchorBottom = 0.5f;
+            _portrait.OffsetLeft = 30;
+            _portrait.OffsetTop = -50; // Half height (100px total)
+            _portrait.OffsetRight = 130; // Width 100
+            _portrait.OffsetBottom = 50;
+            
             _portrait.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
-            // Create a simple colored texture for the portrait
-            var image = Image.CreateEmpty(80, 80, false, Image.Format.Rgba8);
-            image.Fill(new Color(0, 1, 0)); // Green for friendly
+            var image = Image.CreateEmpty(100, 100, false, Image.Format.Rgba8);
+            image.Fill(new Color("bf00ff")); // Default Purple
             var texture = ImageTexture.CreateFromImage(image);
             _portrait.Texture = texture;
             panel.AddChild(_portrait);
 
             // Speaker Label
             _speakerLabel = new Label();
-            _speakerLabel.Position = new Vector2(110, 10); // Shifted right
-            _speakerLabel.AddThemeColorOverride("font_color", new Color(0, 1, 0));
+            _speakerLabel.Position = new Vector2(150, 15); // Right of portrait
+            _speakerLabel.AddThemeColorOverride("font_color", new Color("00ff41")); // Terminal Green
             _speakerLabel.AddThemeFontSizeOverride("font_size", 24);
-            _speakerLabel.Text = "SPEAKER";
+            _speakerLabel.Text = "UNKNOWN_SOURCE";
             panel.AddChild(_speakerLabel);
 
             // Text Label
             _textLabel = new Label();
-            _textLabel.Position = new Vector2(110, 50); // Shifted right
-            _textLabel.Size = new Vector2(470, 90);
+            // Anchor to fill the rest of the panel
+            _textLabel.AnchorLeft = 0;
+            _textLabel.AnchorTop = 0;
+            _textLabel.AnchorRight = 1;
+            _textLabel.AnchorBottom = 1;
+            _textLabel.OffsetLeft = 150; // Right of portrait
+            _textLabel.OffsetTop = 50; // Below speaker name
+            _textLabel.OffsetRight = -30;
+            _textLabel.OffsetBottom = -15;
+            
             _textLabel.AutowrapMode = TextServer.AutowrapMode.Word;
-            _textLabel.AddThemeFontSizeOverride("font_size", 18);
-            _textLabel.Text = "Dialogue text goes here...";
+            _textLabel.AddThemeFontSizeOverride("font_size", 20);
+            _textLabel.AddThemeColorOverride("font_color", Colors.White);
+            _textLabel.Text = "Establishing secure connection...";
             panel.AddChild(_textLabel);
         }
 

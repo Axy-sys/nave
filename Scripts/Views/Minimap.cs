@@ -12,11 +12,11 @@ namespace CyberSecurityGame.Views
 	{
 		[Export] public float DetectionRadius = 500f;
 		[Export] public float MinimapSize = 150f;
-		[Export] public Color BackgroundColor = new Color(0, 0.1f, 0.2f, 0.8f);
-		[Export] public Color BorderColor = new Color(0, 1f, 1f, 1f);
-		[Export] public Color PlayerColor = new Color(0, 1f, 1f, 1f);
-		[Export] public Color EnemyColor = new Color(1f, 0, 0.27f, 1f);
-		[Export] public Color RadarColor = new Color(0, 1f, 1f, 0.3f);
+		[Export] public Color BackgroundColor = new Color(0.05f, 0.0f, 0.05f, 0.9f); // Deep Purple/Black
+		[Export] public Color BorderColor = new Color("bf00ff"); // Rippier Purple
+		[Export] public Color PlayerColor = new Color("00ff41"); // Terminal Green
+		[Export] public Color EnemyColor = new Color(1f, 0, 0, 1f); // Alert Red
+		[Export] public Color RadarColor = new Color("bf00ff"); // Purple Radar
 		
 		private Node2D _player;
 		private List<Node2D> _enemies = new List<Node2D>();
@@ -28,6 +28,9 @@ namespace CyberSecurityGame.Views
 			SetAnchorsPreset(LayoutPreset.TopRight);
 			Position = new Vector2(-MinimapSize - 20, 20);
 			CustomMinimumSize = new Vector2(MinimapSize, MinimapSize);
+			
+			// RadarColor needs transparency
+			RadarColor = new Color(RadarColor.R, RadarColor.G, RadarColor.B, 0.3f);
 			
 			// Suscribirse a eventos
 			// Los enemigos se buscarán dinámicamente cada frame

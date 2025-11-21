@@ -11,15 +11,18 @@ namespace CyberSecurityGame.Components
 	public partial class WeaponComponent : BaseComponent
 	{
 		[Export] public float FireRate = 0.2f; // Tiempo entre disparos
+		[Export] public float LoadCost = 10f; // Costo de CPU por disparo
 		[Export] public PackedScene ProjectileScene;
 		
 		private IWeapon _currentWeapon;
 		private float _fireTimer = 0f;
 		private Node2D _weaponOwner;
+		private CpuComponent _cpuComponent;
 
 		protected override void OnInitialize()
 		{
 			_weaponOwner = _owner as Node2D;
+			_cpuComponent = _owner.GetNodeOrNull<CpuComponent>("CpuComponent");
 			
 			// Arma inicial por defecto (Firewall)
 			SetWeapon(new FirewallWeapon());
@@ -45,6 +48,9 @@ namespace CyberSecurityGame.Components
 		{
 			_currentWeapon = weapon;
 			
+			// Configurar dueño
+			_currentWeapon.SetOwner(_weaponOwner);
+
 			// Si el arma es BaseWeapon, configurar el nodo raíz para spawning
 			if (weapon is BaseWeapon baseWeapon)
 			{
@@ -61,11 +67,23 @@ namespace CyberSecurityGame.Components
 			_currentWeapon.Fire(_weaponOwner.GlobalPosition, direction);
 			_fireTimer = FireRate;
 			
+			// Generar carga de CPU
+			if (_cpuComponent != null)
+			{
+				_cpuComponent.AddLoad(LoadCost);
+			}
+			
 			return true;
 		}
 
 		public bool CanFire()
 		{
+			// Verificar si hay sobrecarga de CPU
+			if (_cpuComponent != null && _cpuComponent.IsOverloaded())
+			{
+				return false;
+			}
+
 			return _fireTimer <= 0 && _currentWeapon != null && _currentWeapon.CanFire();
 		}
 

@@ -12,6 +12,7 @@ namespace CyberSecurityGame.Core.Interfaces
 		void Reload();
 		string GetWeaponName();
 		WeaponType GetWeaponType();
+		void SetOwner(Node2D owner); // Added for context access
 	}
 	
 	/// <summary>

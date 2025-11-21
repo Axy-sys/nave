@@ -120,9 +120,58 @@ namespace CyberSecurityGame.Components
 			{
 				GameEventBus.Instance.EmitPlayerDied();
 			}
+			else
+			{
+				// INTERACCIÓN: Explosión en cadena al morir
+				SpawnExplosion();
+			}
 			
 			// El owner (nave/enemigo) puede reaccionar a esto
 			_owner?.CallDeferred("queue_free");
+		}
+
+		private void SpawnExplosion()
+		{
+			if (_owner == null) return;
+
+			// Crear nodo de explosión
+			var explosion = new Area2D();
+			explosion.Name = "DeathExplosion";
+			explosion.GlobalPosition = (_owner as Node2D)?.GlobalPosition ?? Vector2.Zero;
+			
+			// Configurar colisión
+			var collision = new CollisionShape2D();
+			var shape = new CircleShape2D();
+			shape.Radius = 80f; // Radio de explosión aumentado
+			collision.Shape = shape;
+			explosion.AddChild(collision);
+			
+			// Añadir al árbol (Root)
+			_owner.GetTree().Root.CallDeferred("add_child", explosion);
+			
+			// Timer para detonar (esperar a física)
+			var timer = new Timer();
+			timer.WaitTime = 0.1f;
+			timer.OneShot = true;
+			timer.Autostart = true;
+			explosion.AddChild(timer);
+			
+			timer.Timeout += () => 
+			{
+				var bodies = explosion.GetOverlappingBodies();
+				foreach (var body in bodies)
+				{
+					if (body == _owner) continue;
+					
+					// Dañar a otros enemigos (Reacción en cadena)
+					var health = body.GetNodeOrNull<HealthComponent>("HealthComponent");
+					if (health != null && !health.IsPlayer && health.IsAlive())
+					{
+						health.TakeDamage(30f, DamageType.Physical); // Daño significativo
+					}
+				}
+				explosion.QueueFree();
+			};
 		}
 
 		private void LogDamageType(DamageType damageType, float damage)

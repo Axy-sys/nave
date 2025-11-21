@@ -7,9 +7,12 @@ public partial class Tutorial : Node2D
 	private enum TutorialStep
 	{
 		Movement,
+		Dash,
 		Shooting,
-		WeaponSwitch,
-		PowerUps,
+		CpuManagement, // Nuevo paso: Gestión de CPU
+		AdaptiveSystems, // Reemplaza WeaponSwitch
+		Parry,
+		Interaction,
 		Complete
 	}
 	
@@ -20,8 +23,9 @@ public partial class Tutorial : Node2D
 	// UI Labels
 	private Label _stepLabel;
 	private Label _titleLabel;
-	private Label _instructionLabel;
+	private RichTextLabel _instructionLabel; // Cambiado a RichTextLabel para BBCode
 	private Label _progressLabel;
+	private AnimationPlayer _animPlayer; // Para feedback visual
 	
 	// Flechas direccionales
 	private Label _arrowUp;
@@ -32,52 +36,76 @@ public partial class Tutorial : Node2D
 	
 	// Tracking de progreso
 	private HashSet<string> _movedDirections = new HashSet<string>();
+	private int _dashesPerformed = 0;
 	private int _shotsFired = 0;
-	private int _weaponSwitches = 0;
-	private bool _powerUpCollected = false;
+	private float _maxHeatReached = 0f; // Reemplaza weapon switches
+	private int _parriesPerformed = 0;
+	private bool _interactionPerformed = false;
+	private bool _cpuOverloaded = false; // Para el tutorial de CPU
 	
 	private Timer _stepTimer;
+	private float _timeInCurrentStep = 0f;
+	private const float HINT_DELAY = 10.0f; // Tiempo antes de mostrar pista extra
 	
 	public override void _Ready()
 	{
 		_player = GetNode<CharacterBody2D>("Player");
 		
-		// TutorialUI es un CanvasLayer, no un Control
+		// TutorialUI es un CanvasLayer
 		var tutorialUILayer = GetNode<CanvasLayer>("TutorialUI");
 		_overlay = tutorialUILayer.GetNode<Panel>("Overlay");
-		_overlay.Visible = false; // Hacer overlay invisible para no obstruir visión
+		_overlay.Visible = false; 
 		
 		var instructionBox = tutorialUILayer.GetNode<PanelContainer>("InstructionBox");
 		
-		// Reposicionar InstructionBox al fondo (Bottom Center)
-		// Usamos AnchorsPreset.BottomCenter si fuera posible, pero aquí lo hacemos manual o via propiedades
+		// Reposicionar InstructionBox (Más grande y accesible)
 		instructionBox.SetAnchorsPreset(Control.LayoutPreset.CenterBottom);
-		instructionBox.Position = new Vector2((GetViewportRect().Size.X - 800) / 2, GetViewportRect().Size.Y - 220);
-		instructionBox.Size = new Vector2(800, 150);
+		instructionBox.Position = new Vector2((GetViewportRect().Size.X - 900) / 2, GetViewportRect().Size.Y - 250);
+		instructionBox.Size = new Vector2(900, 180);
 		
-		// Estilo Terminal para la caja de instrucciones
+		// Estilo Terminal Mejorado (Alto Contraste)
 		var terminalStyle = new StyleBoxFlat();
-		terminalStyle.BgColor = new Color(0.05f, 0.05f, 0.05f, 0.8f); // Negro terminal semi-transparente
-		terminalStyle.BorderColor = new Color(0, 1, 1); // Borde Cyan
-		terminalStyle.SetBorderWidthAll(2);
-		terminalStyle.SetCornerRadiusAll(4);
-		terminalStyle.ShadowColor = new Color(0, 1, 1, 0.1f);
-		terminalStyle.ShadowSize = 5;
+		terminalStyle.BgColor = new Color(0.02f, 0.02f, 0.02f, 0.95f); 
+		terminalStyle.BorderColor = new Color("bf00ff"); // Rippier Purple
+		terminalStyle.SetBorderWidthAll(3);
+		terminalStyle.SetCornerRadiusAll(8);
+		terminalStyle.ShadowColor = new Color("bf00ff");
+		terminalStyle.ShadowSize = 15;
 		instructionBox.AddThemeStyleboxOverride("panel", terminalStyle);
 
 		var vbox = instructionBox.GetNode<VBoxContainer>("VBox");
 		
 		_stepLabel = vbox.GetNode<Label>("StepLabel");
-		_stepLabel.AddThemeColorOverride("font_color", new Color(0, 1, 1)); // Cyan
+		_stepLabel.AddThemeColorOverride("font_color", new Color("00ff41")); // Terminal Green
+		_stepLabel.AddThemeFontSizeOverride("font_size", 16);
 		
 		_titleLabel = vbox.GetNode<Label>("TitleLabel");
 		_titleLabel.AddThemeColorOverride("font_color", Colors.White); 
+		_titleLabel.AddThemeFontSizeOverride("font_size", 28); // Más grande
 		
-		_instructionLabel = vbox.GetNode<Label>("InstructionLabel");
-		_instructionLabel.AddThemeColorOverride("font_color", new Color(0.8f, 0.9f, 1));
+		// Reemplazar Label con RichTextLabel si es necesario, o castear si ya lo cambiamos en escena
+		// Como estamos editando código, asumimos que el nodo en escena es compatible o lo reemplazamos dinámicamente
+		var oldLabel = vbox.GetNodeOrNull<Label>("InstructionLabel");
+		if (oldLabel != null)
+		{
+			oldLabel.QueueFree();
+			_instructionLabel = new RichTextLabel();
+			_instructionLabel.Name = "InstructionLabel";
+			_instructionLabel.BbcodeEnabled = true;
+			_instructionLabel.FitContent = true;
+			_instructionLabel.CustomMinimumSize = new Vector2(0, 60);
+			_instructionLabel.AddThemeFontSizeOverride("normal_font_size", 20); // Texto grande y legible
+			vbox.AddChild(_instructionLabel);
+			vbox.MoveChild(_instructionLabel, 2);
+		}
+		else
+		{
+			_instructionLabel = vbox.GetNode<RichTextLabel>("InstructionLabel");
+		}
 		
 		_progressLabel = vbox.GetNode<Label>("ProgressLabel");
-		_progressLabel.AddThemeColorOverride("font_color", new Color(1, 1, 0)); // Amarillo info
+		_progressLabel.AddThemeColorOverride("font_color", new Color("ffaa00")); // Flux Orange
+		_progressLabel.AddThemeFontSizeOverride("font_size", 18);
 		
 		_arrowUp = tutorialUILayer.GetNode<Label>("ArrowUp");
 		_arrowDown = tutorialUILayer.GetNode<Label>("ArrowDown");
@@ -85,19 +113,15 @@ public partial class Tutorial : Node2D
 		_arrowRight = tutorialUILayer.GetNode<Label>("ArrowRight");
 		_highlightPanel = tutorialUILayer.GetNode<Panel>("HighlightPanel");
 		
-		// Estilo botón saltar (Top Right)
+		// Botón Saltar Accesible
 		var skipButton = tutorialUILayer.GetNode<Button>("SkipButton");
-		skipButton.Position = new Vector2(GetViewportRect().Size.X - 160, 20);
-		var btnStyle = new StyleBoxFlat();
-		btnStyle.BgColor = new Color(0, 0, 0, 0.5f);
-		btnStyle.BorderColor = new Color(1, 0, 0); // Rojo para salir
-		btnStyle.SetBorderWidthAll(1);
-		skipButton.AddThemeStyleboxOverride("normal", btnStyle);
-		skipButton.AddThemeColorOverride("font_color", new Color(1, 0.5f, 0.5f));
-
+		skipButton.Text = "SKIP_TRAINING_SEQUENCE (ESC)";
+		skipButton.Position = new Vector2(GetViewportRect().Size.X - 220, 20);
+		skipButton.Size = new Vector2(200, 50);
+		
 		_stepTimer = new Timer();
 		AddChild(_stepTimer);
-		_stepTimer.WaitTime = 0.5f;
+		_stepTimer.WaitTime = 0.1f;
 		_stepTimer.Timeout += CheckStepProgress;
 		_stepTimer.Start();
 		
@@ -106,6 +130,15 @@ public partial class Tutorial : Node2D
 	
 	public override void _Process(double delta)
 	{
+		_timeInCurrentStep += (float)delta;
+		
+		// Sistema de Pistas para "Dummies" (Si se atascan)
+		if (_timeInCurrentStep > HINT_DELAY)
+		{
+			ShowHint();
+			_timeInCurrentStep = 0; // Reset para no spammear
+		}
+
 		// Tracking de movimiento
 		if (_currentStep == TutorialStep.Movement)
 		{
@@ -117,6 +150,12 @@ public partial class Tutorial : Node2D
 			UpdateMovementProgress();
 		}
 		
+		// Tracking de Dash
+		if (_currentStep == TutorialStep.Dash)
+		{
+			// Lógica manejada en _Input
+		}
+
 		// Tracking de disparos
 		if (_currentStep == TutorialStep.Shooting)
 		{
@@ -127,15 +166,84 @@ public partial class Tutorial : Node2D
 			}
 		}
 		
-		// Tracking de cambio de armas
-		if (_currentStep == TutorialStep.WeaponSwitch)
+		// Tracking de CPU
+		if (_currentStep == TutorialStep.CpuManagement)
 		{
-			if (Input.IsActionJustPressed("next_weapon") || Input.IsActionJustPressed("prev_weapon"))
+			var cpu = _player.GetNodeOrNull<CyberSecurityGame.Components.CpuComponent>("CpuComponent");
+			if (cpu != null && cpu.IsOverloaded())
 			{
-				_weaponSwitches++;
-				UpdateWeaponSwitchProgress();
+				_cpuOverloaded = true;
 			}
 		}
+		
+		// Tracking de Sistemas Adaptativos
+		if (_currentStep == TutorialStep.AdaptiveSystems)
+		{
+			var cpu = _player.GetNodeOrNull<CyberSecurityGame.Components.CpuComponent>("CpuComponent");
+			if (cpu != null)
+			{
+				float currentHeat = cpu.GetLoadPercentage();
+				if (currentHeat > _maxHeatReached) _maxHeatReached = currentHeat;
+				UpdateAdaptiveProgress();
+			}
+		}
+
+		// Tracking de Parry
+		if (_currentStep == TutorialStep.Parry)
+		{
+			// Lógica manejada en _Input
+		}
+		
+		// Tracking de Interacción
+		if (_currentStep == TutorialStep.Interaction)
+		{
+			if (Input.IsKeyPressed(Key.E))
+			{
+				_interactionPerformed = true;
+			}
+		}
+	}
+
+	public override void _Input(InputEvent @event)
+	{
+		if (@event.IsActionPressed("ui_cancel"))
+		{
+			_on_skip_button_pressed();
+		}
+
+		if (_currentStep == TutorialStep.Dash && @event is InputEventKey keyEvent && keyEvent.Pressed && !keyEvent.Echo && keyEvent.Keycode == Key.Space)
+		{
+			_dashesPerformed++;
+			UpdateDashProgress();
+			ResetStuckTimer();
+		}
+
+		if (_currentStep == TutorialStep.Parry && @event is InputEventKey keyEvent2 && keyEvent2.Pressed && !keyEvent2.Echo && keyEvent2.Keycode == Key.Shift)
+		{
+			_parriesPerformed++;
+			UpdateParryProgress();
+			ResetStuckTimer();
+		}
+		
+		// Reset timer on any valid input for current step
+		if (_currentStep == TutorialStep.Movement && (@event.IsActionPressed("move_up") || @event.IsActionPressed("move_down"))) ResetStuckTimer();
+		if (_currentStep == TutorialStep.Shooting && @event.IsActionPressed("fire")) ResetStuckTimer();
+	}
+	
+	private void ResetStuckTimer()
+	{
+		_timeInCurrentStep = 0;
+	}
+	
+	private void ShowHint()
+	{
+		// Feedback visual extra si el jugador tarda mucho
+		var tween = CreateTween();
+		tween.TweenProperty(_instructionLabel, "modulate", new Color(1, 0.5f, 0.5f), 0.5f); // Rojo suave
+		tween.TweenProperty(_instructionLabel, "modulate", Colors.White, 0.5f);
+		
+		// Podríamos reproducir un sonido aquí
+		GD.Print("💡 ¿Necesitas ayuda? Revisa las instrucciones.");
 	}
 	
 	private void CheckStepProgress()
@@ -143,28 +251,32 @@ public partial class Tutorial : Node2D
 		switch (_currentStep)
 		{
 			case TutorialStep.Movement:
-				if (_movedDirections.Count >= 4)
-				{
-					AdvanceStep();
-				}
+				if (_movedDirections.Count >= 4) AdvanceStep();
 				break;
 				
+			case TutorialStep.Dash:
+				if (_dashesPerformed >= 3) AdvanceStep();
+				break;
+
 			case TutorialStep.Shooting:
-				if (_shotsFired >= 5)
-				{
-					AdvanceStep();
-				}
+				if (_shotsFired >= 10) AdvanceStep(); // Aumentado para forzar generación de calor
 				break;
 				
-			case TutorialStep.WeaponSwitch:
-				if (_weaponSwitches >= 3)
-				{
-					AdvanceStep();
-				}
+			case TutorialStep.CpuManagement:
+				if (_cpuOverloaded) AdvanceStep();
 				break;
 				
-			case TutorialStep.PowerUps:
-				// Se avanza cuando se recolecte un power-up
+			case TutorialStep.AdaptiveSystems:
+				// Avanzar si el jugador ha experimentado alto calor (Chaos Mode)
+				if (_maxHeatReached >= 0.75f) AdvanceStep();
+				break;
+				
+			case TutorialStep.Parry:
+				if (_parriesPerformed >= 3) AdvanceStep();
+				break;
+
+			case TutorialStep.Interaction:
+				if (_interactionPerformed) AdvanceStep();
 				break;
 		}
 	}
@@ -172,6 +284,11 @@ public partial class Tutorial : Node2D
 	private void AdvanceStep()
 	{
 		_currentStep++;
+		_timeInCurrentStep = 0; // Reset timer
+		
+		// Sonido de éxito (simulado) y feedback visual
+		GD.Print("✨ Paso completado!");
+		FlashScreen();
 		
 		if (_currentStep == TutorialStep.Complete)
 		{
@@ -182,100 +299,135 @@ public partial class Tutorial : Node2D
 		UpdateStepUI();
 	}
 	
+	private void FlashScreen()
+	{
+		var flash = new ColorRect();
+		flash.Color = new Color(1, 1, 1, 0);
+		flash.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		flash.MouseFilter = Control.MouseFilterEnum.Ignore;
+		_overlay.GetParent().AddChild(flash);
+		
+		var tween = CreateTween();
+		tween.TweenProperty(flash, "color:a", 0.3f, 0.1f);
+		tween.TweenProperty(flash, "color:a", 0.0f, 0.3f);
+		tween.TweenCallback(Callable.From(flash.QueueFree));
+	}
+	
 	private void UpdateStepUI()
 	{
 		int stepNumber = (int)_currentStep + 1;
-		_stepLabel.Text = $"Paso {stepNumber}/5";
+		_stepLabel.Text = $"TRAINING_MODULE_V1.0 {stepNumber}/8";
 		
-		// Ocultar todas las flechas y highlights
+		// Ocultar flechas por defecto
 		_arrowUp.Visible = false;
 		_arrowDown.Visible = false;
 		_arrowLeft.Visible = false;
 		_arrowRight.Visible = false;
-		_highlightPanel.Visible = false;
 		
 		switch (_currentStep)
 		{
 			case TutorialStep.Movement:
-				_titleLabel.Text = "🎮 Movimiento Básico";
-				_instructionLabel.Text = "Usa las teclas WASD o las flechas para mover tu nave.\n¡Intenta moverte en las 4 direcciones!";
-				_progressLabel.Text = "Progreso: Muévete en todas las direcciones";
+				_titleLabel.Text = "BASIC_NAVIGATION_PROTOCOLS";
+				_instructionLabel.Text = "Use [color=#ffaa00][b]W, A, S, D[/b][/color] to navigate the grid.\nExplore all vectors to calibrate engines.";
+				_progressLabel.Text = "Status: Initializing engines...";
 				
-				// Mostrar flechas direccionales
 				_arrowUp.Visible = true;
 				_arrowDown.Visible = true;
 				_arrowLeft.Visible = true;
 				_arrowRight.Visible = true;
 				break;
 				
+			case TutorialStep.Dash:
+				_titleLabel.Text = "PACKET_JUMP (DASH)";
+				_instructionLabel.Text = "Press [color=#ffaa00][b]SPACE[/b][/color] while moving for a rapid impulse.\n[i]Note: This consumes CPU cycles.[/i]";
+				_progressLabel.Text = "Progress: 0/3 jumps";
+				break;
+
 			case TutorialStep.Shooting:
-				_titleLabel.Text = "🔫 Disparar";
-				_instructionLabel.Text = "Presiona ESPACIO o CLICK IZQUIERDO para disparar.\n¡Practica disparando 5 veces!";
-				_progressLabel.Text = "Progreso: 0/5 disparos";
+				_titleLabel.Text = "SCRIPT_EXECUTION (FIRE)";
+				_instructionLabel.Text = "Press [color=#ffaa00][b]LEFT CLICK[/b][/color] to execute attack scripts.\nFire continuously to test the system.";
+				_progressLabel.Text = "Progress: 0/10 scripts executed";
 				break;
 				
-			case TutorialStep.WeaponSwitch:
-				_titleLabel.Text = "⚔️ Cambiar Armas";
-				_instructionLabel.Text = "Usa las teclas 1, 2, 3, 4 o la RUEDA DEL RATÓN para cambiar de arma.\n¡Cambia de arma 3 veces!";
-				_progressLabel.Text = "Progreso: 0/3 cambios";
+			case TutorialStep.CpuManagement:
+				_titleLabel.Text = "CPU_FLUX_MANAGEMENT";
+				_instructionLabel.Text = "Firing and Dashing generates [color=#ffaa00]HEAT[/color].\nFire until the bar fills to trigger a controlled [color=#ff0000]OVERLOAD[/color].";
+				_progressLabel.Text = "Objective: Overload System (100% CPU)";
 				break;
 				
-			case TutorialStep.PowerUps:
-				_titleLabel.Text = "💎 Power-Ups";
-				_instructionLabel.Text = "¡Los power-ups te dan mejoras temporales!\nCollisiona con ellos para recogerlos.";
-				_progressLabel.Text = "Espera a que aparezca un power-up...";
-				SpawnPowerUpForTutorial();
+			case TutorialStep.AdaptiveSystems:
+				_titleLabel.Text = "ADAPTIVE_WEAPON_SYSTEMS";
+				_instructionLabel.Text = "Your weapon adapts to CPU Heat.\n[color=#00ff41]LOW HEAT[/color]: Precision | [color=#ffaa00]MED HEAT[/color]: Rapid | [color=#bf00ff]HIGH HEAT[/color]: Chaos\nIncrease heat to > 75% to test Chaos Mode.";
+				_progressLabel.Text = "Current Max Heat: 0%";
+				break;
+				
+			case TutorialStep.Parry:
+				_titleLabel.Text = "PROTOCOL_REFLECT (PARRY)";
+				_instructionLabel.Text = "Press [color=#ffaa00][b]SHIFT[/b][/color] to activate the shield.\nA perfect parry [color=#00ffff]VENTILATES HEAT[/color] instantly.";
+				_progressLabel.Text = "Progress: 0/3 attempts";
+				break;
+
+			case TutorialStep.Interaction:
+				_titleLabel.Text = "SYSTEM_INTERACTION";
+				_instructionLabel.Text = "Approach the Data Node and press [color=#ffaa00][b]E[/b][/color].\nRecover integrity or decrypt files.";
+				_progressLabel.Text = "Waiting for interaction...";
+				SpawnTutorialNode();
 				break;
 		}
 	}
 	
 	private void UpdateMovementProgress()
 	{
-		_progressLabel.Text = $"Progreso: {_movedDirections.Count}/4 direcciones";
+		_progressLabel.Text = $"Direcciones verificadas: {_movedDirections.Count}/4";
 		
-		// Resaltar flechas según direcciones usadas
-		_arrowUp.Modulate = _movedDirections.Contains("up") ? new Color(0, 1, 0.5f) : new Color(0, 1, 1);
-		_arrowDown.Modulate = _movedDirections.Contains("down") ? new Color(0, 1, 0.5f) : new Color(0, 1, 1);
-		_arrowLeft.Modulate = _movedDirections.Contains("left") ? new Color(0, 1, 0.5f) : new Color(0, 1, 1);
-		_arrowRight.Modulate = _movedDirections.Contains("right") ? new Color(0, 1, 0.5f) : new Color(0, 1, 1);
+		_arrowUp.Modulate = _movedDirections.Contains("up") ? new Color(0, 1, 0) : new Color(0, 1, 1);
+		_arrowDown.Modulate = _movedDirections.Contains("down") ? new Color(0, 1, 0) : new Color(0, 1, 1);
+		_arrowLeft.Modulate = _movedDirections.Contains("left") ? new Color(0, 1, 0) : new Color(0, 1, 1);
+		_arrowRight.Modulate = _movedDirections.Contains("right") ? new Color(0, 1, 0) : new Color(0, 1, 1);
 	}
 	
+	private void UpdateDashProgress()
+	{
+		_progressLabel.Text = $"Impulsos realizados: {_dashesPerformed}/3";
+	}
+
 	private void UpdateShootingProgress()
 	{
-		_progressLabel.Text = $"Progreso: {_shotsFired}/5 disparos";
+		_progressLabel.Text = $"Scripts ejecutados: {_shotsFired}/10";
 	}
 	
-	private void UpdateWeaponSwitchProgress()
+	private void UpdateAdaptiveProgress()
 	{
-		_progressLabel.Text = $"Progreso: {_weaponSwitches}/3 cambios";
+		_progressLabel.Text = $"Current Max Heat: {Mathf.Round(_maxHeatReached * 100)}% / 75%";
+		
+		if (_maxHeatReached >= 0.75f)
+		{
+			_progressLabel.AddThemeColorOverride("font_color", new Color("00ff41")); // Green Success
+		}
+	}
+
+	private void UpdateParryProgress()
+	{
+		_progressLabel.Text = $"Reflejos activados: {_parriesPerformed}/3";
 	}
 	
-	private void SpawnPowerUpForTutorial()
+	private void SpawnTutorialNode()
 	{
-		// TODO: Crear un power-up de demostración
-		// Por ahora, avanzamos automáticamente después de 5 segundos
-		var autoAdvanceTimer = new Timer();
-		AddChild(autoAdvanceTimer);
-		autoAdvanceTimer.WaitTime = 5.0f;
-		autoAdvanceTimer.OneShot = true;
-		autoAdvanceTimer.Timeout += () => {
-			_powerUpCollected = true;
-			AdvanceStep();
-		};
-		autoAdvanceTimer.Start();
+		// Spawn a dummy node for interaction
+		var node = new CyberSecurityGame.Entities.DataNode();
+		node.Position = new Vector2(GetViewportRect().Size.X / 2, 200);
+		AddChild(node);
 	}
 	
 	private void CompleteTutorial()
 	{
-		_titleLabel.Text = "✅ ¡Tutorial Completado!";
-		_instructionLabel.Text = "¡Excelente trabajo! Ya conoces los controles básicos.\n¿Listo para el juego real?";
-		_progressLabel.Text = "Presiona cualquier botón para comenzar";
-		_stepLabel.Text = "Paso 5/5";
+		_titleLabel.Text = "✅ TRAINING_SEQUENCE_COMPLETE";
+		_instructionLabel.Text = "System calibrated. You are ready for the Surface Web.\nRemember: [color=#ffaa00]Manage your CPU_FLUX[/color] or you will be vulnerable.";
+		_progressLabel.Text = "Press any key to initialize...";
+		_stepLabel.Text = "STATUS: READY";
 		
-		// Ocultar overlay para mostrar todo el juego
 		_overlay.Visible = false;
 		
-		// Esperar input para continuar
 		var continueTimer = new Timer();
 		AddChild(continueTimer);
 		continueTimer.WaitTime = 0.1f;
@@ -291,13 +443,5 @@ public partial class Tutorial : Node2D
 	private void _on_skip_button_pressed()
 	{
 		GetTree().ChangeSceneToFile("res://Scenes/MainMenu.tscn");
-	}
-	
-	public override void _Input(InputEvent @event)
-	{
-		if (@event.IsActionPressed("ui_cancel"))
-		{
-			_on_skip_button_pressed();
-		}
 	}
 }

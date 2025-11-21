@@ -16,6 +16,7 @@ namespace CyberSecurityGame.Entities
 		private MovementComponent _movementComponent;
 		private WeaponComponent _weaponComponent;
 		private ShieldComponent _shieldComponent;
+		private CpuComponent _cpuComponent;
 
 		// Configuración
 		[Export] public float MaxHealth = 100f;
@@ -81,6 +82,9 @@ namespace CyberSecurityGame.Entities
 				_weaponComponent.FireRate = 0.15f;
 			}
 			_weaponComponent.Initialize(this);
+			
+			// Equipar arma adaptativa por defecto
+			_weaponComponent.SetWeapon(new AdaptiveWeapon());
 
 			_shieldComponent = GetNodeOrNull<ShieldComponent>("ShieldComponent");
 			if (_shieldComponent == null)
@@ -97,6 +101,18 @@ namespace CyberSecurityGame.Entities
 				_shieldComponent.MaxShieldStrength = 50f;
 			}
 			_shieldComponent.Initialize(this);
+
+			_cpuComponent = GetNodeOrNull<CpuComponent>("CpuComponent");
+			if (_cpuComponent == null)
+			{
+				_cpuComponent = new CpuComponent
+				{
+					Name = "CpuComponent",
+					MaxLoad = 100f
+				};
+				AddChild(_cpuComponent);
+			}
+			_cpuComponent.Initialize(this);
 
 			GD.Print("✓ Player inicializado con componentes");
 		}
@@ -138,7 +154,30 @@ namespace CyberSecurityGame.Entities
 				inputDirection.X += 1;
 
 			inputDirection = inputDirection.Normalized();
+
+			// DASH MECHANIC (Spacebar)
+			if (Input.IsKeyPressed(Key.Space))
+			{
+				if (_movementComponent != null && _movementComponent.TryDash(inputDirection))
+				{
+					// Visual Feedback for Dash
+					Modulate = new Color(0, 1, 1, 0.5f); // Cyan transparent
+					GetTree().CreateTimer(0.2f).Timeout += () => Modulate = Colors.White;
+				}
+			}
+
 			_movementComponent?.Move(inputDirection, delta);
+
+			// PARRY MECHANIC (Shift)
+			if (Input.IsKeyPressed(Key.Shift))
+			{
+				if (_shieldComponent != null && _shieldComponent.TriggerParry())
+				{
+					// Visual Feedback for Parry
+					Modulate = new Color(1, 0.8f, 0, 1f); // Gold
+					GetTree().CreateTimer(0.2f).Timeout += () => Modulate = Colors.White;
+				}
+			}
 
 			// Disparo
 			if (Input.IsActionPressed("fire"))
@@ -147,31 +186,14 @@ namespace CyberSecurityGame.Entities
 				_weaponComponent?.TryFire(fireDirection);
 			}
 
-			// Cambio de arma (teclas numéricas)
-			HandleWeaponSwitch();
+			// Cambio de arma eliminado ("Less is More")
+			// El arma ahora es adaptativa y cambia con el Heat/CPU
 		}
 
 		private Vector2 GetFireDirection()
 		{
-			// En un juego real, esto apuntaría hacia el mouse
-			// Por ahora dispara hacia arriba
-			return Vector2.Up;
-		}
-
-		private void HandleWeaponSwitch()
-		{
-			if (Input.IsActionJustPressed("weapon_1"))
-			{
-				_weaponComponent?.SetWeapon(new FirewallWeapon());
-			}
-			else if (Input.IsActionJustPressed("weapon_2"))
-			{
-				_weaponComponent?.SetWeapon(new AntivirusWeapon());
-			}
-			else if (Input.IsActionJustPressed("weapon_3"))
-			{
-				_weaponComponent?.SetWeapon(new EncryptionWeapon());
-			}
+			// Apuntar hacia el mouse para mayor intuición
+			return (GetGlobalMousePosition() - GlobalPosition).Normalized();
 		}
 
 		private void UpdateComponents(double delta)

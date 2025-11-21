@@ -49,6 +49,10 @@ namespace CyberSecurityGame.Core.Events
 		
 		// Eventos de estado de juego
 		public event Action<GameState> OnGameStateChanged;
+		
+		// Eventos de CPU (Flux)
+		public event Action<float, float> OnCpuLoadChanged; // current, max
+		public event Action<bool> OnCpuOverloadChanged; // isOverloaded
 
 		public void EmitPlayerHealthChanged(float health)
 		{
@@ -133,6 +137,16 @@ namespace CyberSecurityGame.Core.Events
 		public void EmitGameStateChanged(GameState newState)
 		{
 			OnGameStateChanged?.Invoke(newState);
+		}
+
+		public void EmitCpuLoadChanged(float current, float max)
+		{
+			OnCpuLoadChanged?.Invoke(current, max);
+		}
+
+		public void EmitCpuOverloadChanged(bool isOverloaded)
+		{
+			OnCpuOverloadChanged?.Invoke(isOverloaded);
 		}
 	}
 }

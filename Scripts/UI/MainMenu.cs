@@ -24,21 +24,23 @@ public partial class MainMenu : Control
         // Estilo base para botones
         var normalStyle = new StyleBoxFlat();
         normalStyle.BgColor = new Color(0, 0, 0, 0.6f);
-        normalStyle.BorderColor = new Color(0, 1, 0); // Verde terminal
+        normalStyle.BorderColor = new Color("bf00ff"); // Rippier Purple
         normalStyle.SetBorderWidthAll(2);
         normalStyle.SetCornerRadiusAll(4);
 
         var hoverStyle = new StyleBoxFlat();
-        hoverStyle.BgColor = new Color(0, 1, 0, 0.2f);
-        hoverStyle.BorderColor = new Color(0, 1, 0);
+        hoverStyle.BgColor = new Color("bf00ff"); // Purple Fill
+        hoverStyle.BgColor = new Color(hoverStyle.BgColor.R, hoverStyle.BgColor.G, hoverStyle.BgColor.B, 0.2f);
+        hoverStyle.BorderColor = new Color("bf00ff");
         hoverStyle.SetBorderWidthAll(2);
         hoverStyle.SetCornerRadiusAll(4);
-        hoverStyle.ShadowColor = new Color(0, 1, 0, 0.4f);
+        hoverStyle.ShadowColor = new Color("bf00ff");
         hoverStyle.ShadowSize = 8;
 
         var pressedStyle = new StyleBoxFlat();
-        pressedStyle.BgColor = new Color(0, 0.8f, 0, 0.4f);
-        pressedStyle.BorderColor = new Color(0, 1, 0);
+        pressedStyle.BgColor = new Color("bf00ff");
+        pressedStyle.BgColor = new Color(pressedStyle.BgColor.R, pressedStyle.BgColor.G, pressedStyle.BgColor.B, 0.4f);
+        pressedStyle.BorderColor = new Color("bf00ff");
         pressedStyle.SetBorderWidthAll(2);
         pressedStyle.SetCornerRadiusAll(4);
 
@@ -54,7 +56,7 @@ public partial class MainMenu : Control
             btn.AddThemeStyleboxOverride("pressed", pressedStyle);
             
             // Texto estilo terminal
-            btn.AddThemeColorOverride("font_color", new Color(0, 1, 0));
+            btn.AddThemeColorOverride("font_color", new Color("00ff41")); // Terminal Green
             btn.AddThemeColorOverride("font_hover_color", Colors.White);
             btn.AddThemeColorOverride("font_pressed_color", Colors.Black);
             
@@ -67,12 +69,20 @@ public partial class MainMenu : Control
 
         // Estilo del Título
         var titleLabel = GetNode<Label>("UI/TitleContainer/Title");
-        titleLabel.AddThemeColorOverride("font_color", new Color(0, 1, 0));
-        titleLabel.Text = "SYSTEM_DEFENDER_V1.0";
+        titleLabel.AddThemeColorOverride("font_color", new Color("bf00ff")); // Rippier Purple
+        titleLabel.Text = "PROJECT: R.I.P.";
         
         var subtitleLabel = GetNode<Label>("UI/TitleContainer/Subtitle");
-        subtitleLabel.AddThemeColorOverride("font_color", new Color(0, 0.8f, 0));
-        subtitleLabel.Text = "[ CYBERSECURITY_TRAINING_MODULE ]";
+        subtitleLabel.AddThemeColorOverride("font_color", new Color("00ff41")); // Terminal Green
+        subtitleLabel.Text = "[ REAL-TIME INTRUSION PREVENTION ]";
+        
+        // Footer Branding
+        var versionLabel = GetNode<Label>("UI/Footer/Version");
+        if (versionLabel != null)
+        {
+            versionLabel.Text = "DEV: CodeRippier Team | v1.1.0";
+            versionLabel.AddThemeColorOverride("font_color", new Color("bf00ff"));
+        }
     }
     
     private void _on_play_button_pressed()

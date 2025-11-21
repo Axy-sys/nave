@@ -14,6 +14,7 @@ namespace CyberSecurityGame.Views
 		private Label _levelLabel;
 		private ProgressBar _healthBar;
 		private ProgressBar _shieldBar;
+		private ProgressBar _cpuBar;
 		private Label _livesLabel;
 		private Label _weaponLabel;
 		private VBoxContainer _notificationContainer;
@@ -32,113 +33,165 @@ namespace CyberSecurityGame.Views
 
 		private void InitializeUI()
 		{
-			// Crear estructura UI programáticamente con mejor diseño
-			var viewportSize = GetViewport().GetVisibleRect().Size;
+			// Crear estructura UI programáticamente con mejor diseño y accesibilidad
+			// Usamos Anchors y Offsets explícitos para garantizar respuesta a cambios de resolución
 
-			// 1. TOP LEFT: Score & Level (Data & Layer)
-			var infoPanel = new Panel();
-			infoPanel.Name = "InfoPanel";
-			infoPanel.Position = new Vector2(20, 20);
-			infoPanel.Size = new Vector2(200, 80);
+			// 1. TOP BAR CONTAINER (Unified Info)
+			var topBar = new Panel();
+			topBar.Name = "TopBar";
+			// Anchor Top Wide
+			topBar.AnchorLeft = 0;
+			topBar.AnchorTop = 0;
+			topBar.AnchorRight = 1;
+			topBar.AnchorBottom = 0;
+			topBar.OffsetLeft = 0;
+			topBar.OffsetTop = 0;
+			topBar.OffsetRight = 0;
+			topBar.OffsetBottom = 60;
 			
-			var terminalStyle = new StyleBoxFlat();
-			terminalStyle.BgColor = new Color(0, 0.05f, 0.1f, 0.9f);
-			terminalStyle.BorderColor = new Color(0, 1, 1, 0.5f);
-			terminalStyle.SetBorderWidthAll(1);
-			terminalStyle.SetCornerRadiusAll(5);
-			infoPanel.AddThemeStyleboxOverride("panel", terminalStyle);
-			AddChild(infoPanel);
-			
+			var topBarStyle = new StyleBoxFlat();
+			topBarStyle.BgColor = new Color(0, 0, 0, 0.9f); // Darker black
+			topBarStyle.BorderColor = new Color("bf00ff"); // Rippier Purple border
+			topBarStyle.BorderWidthBottom = 2;
+			topBar.AddThemeStyleboxOverride("panel", topBarStyle);
+			AddChild(topBar);
+
+			var topHBox = new HBoxContainer();
+			topHBox.SetAnchorsPreset(Control.LayoutPreset.FullRect, true);
+			topHBox.AddThemeConstantOverride("separation", 50);
+			topHBox.Alignment = BoxContainer.AlignmentMode.Center;
+			topBar.AddChild(topHBox);
+
+			// Score Label
 			_scoreLabel = new Label();
-			_scoreLabel.Position = new Vector2(10, 10);
-			_scoreLabel.AddThemeColorOverride("font_color", Colors.White);
-			_scoreLabel.AddThemeFontSizeOverride("font_size", 18);
-			infoPanel.AddChild(_scoreLabel);
+			_scoreLabel.Text = "DATA_STREAM: 0MB";
+			_scoreLabel.AddThemeColorOverride("font_color", new Color("00ff41")); // Terminal Green
+			_scoreLabel.AddThemeFontSizeOverride("font_size", 24); // Larger font
+			_scoreLabel.VerticalAlignment = VerticalAlignment.Center;
+			topHBox.AddChild(_scoreLabel);
 
+			// Level Label
 			_levelLabel = new Label();
-			_levelLabel.Position = new Vector2(10, 40);
-			_levelLabel.AddThemeColorOverride("font_color", new Color(0, 1, 1));
-			_levelLabel.AddThemeFontSizeOverride("font_size", 16);
-			infoPanel.AddChild(_levelLabel);
+			_levelLabel.Text = "SEC_LAYER: 1";
+			_levelLabel.AddThemeColorOverride("font_color", new Color("bf00ff")); // Rippier Purple
+			_levelLabel.AddThemeFontSizeOverride("font_size", 24);
+			_levelLabel.VerticalAlignment = VerticalAlignment.Center;
+			topHBox.AddChild(_levelLabel);
 
-			// 2. TOP RIGHT: Lives (Backups)
-			var livesPanel = new Panel();
-			livesPanel.Position = new Vector2(viewportSize.X - 180, 20);
-			livesPanel.Size = new Vector2(160, 50);
-			livesPanel.AddThemeStyleboxOverride("panel", terminalStyle);
-			AddChild(livesPanel);
-
+			// Lives Label
 			_livesLabel = new Label();
-			_livesLabel.Position = new Vector2(10, 12);
-			_livesLabel.AddThemeColorOverride("font_color", new Color(1, 0.3f, 0.3f));
-			_livesLabel.AddThemeFontSizeOverride("font_size", 18);
-			livesPanel.AddChild(_livesLabel);
+			_livesLabel.Text = "REDUNDANCY: 3";
+			_livesLabel.AddThemeColorOverride("font_color", new Color("ff0000")); // Alert Red
+			_livesLabel.AddThemeFontSizeOverride("font_size", 24);
+			_livesLabel.VerticalAlignment = VerticalAlignment.Center;
+			topHBox.AddChild(_livesLabel);
 
-			// 3. BOTTOM CENTER: Status (Health & Shield)
+			// 2. BOTTOM STATUS PANEL (Health & Shield)
 			var statusPanel = new Panel();
-			statusPanel.Position = new Vector2((viewportSize.X - 400) / 2, viewportSize.Y - 80);
-			statusPanel.Size = new Vector2(400, 70);
-			statusPanel.AddThemeStyleboxOverride("panel", terminalStyle);
+			// Anchor Bottom Left
+			statusPanel.AnchorLeft = 0;
+			statusPanel.AnchorTop = 1;
+			statusPanel.AnchorRight = 0;
+			statusPanel.AnchorBottom = 1;
+			statusPanel.OffsetLeft = 20;
+			statusPanel.OffsetTop = -180; // Above Dialogue
+			statusPanel.OffsetRight = 320; // Width 300
+			statusPanel.OffsetBottom = -100; // Height 80
+			
+			var statusStyle = new StyleBoxFlat();
+			statusStyle.BgColor = new Color(0, 0, 0, 0.6f);
+			statusStyle.CornerRadiusTopRight = 20;
+			statusStyle.CornerRadiusBottomRight = 20;
+			statusPanel.AddThemeStyleboxOverride("panel", statusStyle);
 			AddChild(statusPanel);
 
-			// Health Bar
-			var healthLabel = new Label();
-			healthLabel.Text = "INTEGRIDAD";
-			healthLabel.Position = new Vector2(10, 5);
-			healthLabel.AddThemeColorOverride("font_color", new Color(0, 1, 0.5f));
-			healthLabel.AddThemeFontSizeOverride("font_size", 12);
-			statusPanel.AddChild(healthLabel);
+			var statusVBox = new VBoxContainer();
+			statusVBox.SetAnchorsPreset(Control.LayoutPreset.FullRect, true);
+			statusVBox.Alignment = BoxContainer.AlignmentMode.Center;
+			statusVBox.AddThemeConstantOverride("separation", 10);
+			statusPanel.AddChild(statusVBox);
 
+			// Health Bar
 			_healthBar = new ProgressBar();
-			_healthBar.Position = new Vector2(10, 25);
-			_healthBar.Size = new Vector2(380, 15);
+			_healthBar.CustomMinimumSize = new Vector2(260, 20);
 			_healthBar.ShowPercentage = false;
 			
-			var healthBg = new StyleBoxFlat { BgColor = new Color(0.1f, 0.1f, 0.1f), CornerRadiusTopLeft = 2, CornerRadiusTopRight = 2, CornerRadiusBottomRight = 2, CornerRadiusBottomLeft = 2 };
-			var healthFill = new StyleBoxFlat { BgColor = new Color(0, 1, 0.5f), CornerRadiusTopLeft = 2, CornerRadiusTopRight = 2, CornerRadiusBottomRight = 2, CornerRadiusBottomLeft = 2 };
+			var healthBg = new StyleBoxFlat { BgColor = new Color(0.2f, 0, 0), CornerRadiusTopLeft = 5, CornerRadiusTopRight = 5, CornerRadiusBottomRight = 5, CornerRadiusBottomLeft = 5 };
+			var healthFill = new StyleBoxFlat { BgColor = new Color(0, 1, 0), CornerRadiusTopLeft = 5, CornerRadiusTopRight = 5, CornerRadiusBottomRight = 5, CornerRadiusBottomLeft = 5 };
 			_healthBar.AddThemeStyleboxOverride("background", healthBg);
 			_healthBar.AddThemeStyleboxOverride("fill", healthFill);
-			statusPanel.AddChild(_healthBar);
+			statusVBox.AddChild(_healthBar);
 
-			// Shield Bar
-			_shieldBar = new ProgressBar();
-			_shieldBar.Position = new Vector2(10, 45);
-			_shieldBar.Size = new Vector2(380, 10);
-			_shieldBar.ShowPercentage = false;
-			_shieldBar.Visible = false; // Hidden by default
+			var healthLabel = new Label();
+			healthLabel.Text = "SYS_INTEGRITY";
+			healthLabel.HorizontalAlignment = HorizontalAlignment.Center;
+			healthLabel.AddThemeFontSizeOverride("font_size", 12);
+			statusVBox.AddChild(healthLabel);
+
+			// CPU Load Bar (Flux)
+			_cpuBar = new ProgressBar();
+			_cpuBar.CustomMinimumSize = new Vector2(260, 15);
+			_cpuBar.ShowPercentage = false;
 			
-			var shieldFill = new StyleBoxFlat { BgColor = new Color(0, 0.7f, 1), CornerRadiusTopLeft = 2, CornerRadiusTopRight = 2, CornerRadiusBottomRight = 2, CornerRadiusBottomLeft = 2 };
+			var cpuBg = new StyleBoxFlat { BgColor = new Color(0.1f, 0.1f, 0.1f), CornerRadiusTopLeft = 5, CornerRadiusTopRight = 5, CornerRadiusBottomRight = 5, CornerRadiusBottomLeft = 5 };
+			var cpuFill = new StyleBoxFlat { BgColor = new Color("ffaa00"), CornerRadiusTopLeft = 5, CornerRadiusTopRight = 5, CornerRadiusBottomRight = 5, CornerRadiusBottomLeft = 5 }; // Flux Orange
+			_cpuBar.AddThemeStyleboxOverride("background", cpuBg);
+			_cpuBar.AddThemeStyleboxOverride("fill", cpuFill);
+			statusVBox.AddChild(_cpuBar);
+
+			var cpuLabel = new Label();
+			cpuLabel.Text = "CPU_FLUX";
+			cpuLabel.HorizontalAlignment = HorizontalAlignment.Center;
+			cpuLabel.AddThemeFontSizeOverride("font_size", 10);
+			statusVBox.AddChild(cpuLabel);
+
+			// Shield Bar (Optional)
+			_shieldBar = new ProgressBar();
+			_shieldBar.CustomMinimumSize = new Vector2(260, 10);
+			_shieldBar.ShowPercentage = false;
+			_shieldBar.Visible = false;
+			
+			var shieldFill = new StyleBoxFlat { BgColor = new Color(0, 0.8f, 1), CornerRadiusTopLeft = 5, CornerRadiusTopRight = 5, CornerRadiusBottomRight = 5, CornerRadiusBottomLeft = 5 };
 			_shieldBar.AddThemeStyleboxOverride("background", healthBg);
 			_shieldBar.AddThemeStyleboxOverride("fill", shieldFill);
-			statusPanel.AddChild(_shieldBar);
+			statusVBox.AddChild(_shieldBar);
 
-			// 4. BOTTOM RIGHT: Weapon
+			// 3. WEAPON INDICATOR (Bottom Right)
 			var weaponPanel = new Panel();
-			weaponPanel.Position = new Vector2(viewportSize.X - 220, viewportSize.Y - 70);
-			weaponPanel.Size = new Vector2(200, 50);
-			weaponPanel.AddThemeStyleboxOverride("panel", terminalStyle);
+			// Anchor Bottom Right
+			weaponPanel.AnchorLeft = 1;
+			weaponPanel.AnchorTop = 1;
+			weaponPanel.AnchorRight = 1;
+			weaponPanel.AnchorBottom = 1;
+			weaponPanel.OffsetLeft = -270; // Width 250
+			weaponPanel.OffsetTop = -180;
+			weaponPanel.OffsetRight = -20;
+			weaponPanel.OffsetBottom = -120; // Height 60
+
+			weaponPanel.AddThemeStyleboxOverride("panel", statusStyle);
 			AddChild(weaponPanel);
 			
 			_weaponLabel = new Label();
-			_weaponLabel.Position = new Vector2(10, 12);
-			_weaponLabel.AddThemeColorOverride("font_color", new Color(1, 0.9f, 0));
-			_weaponLabel.AddThemeFontSizeOverride("font_size", 16);
+			_weaponLabel.SetAnchorsPreset(Control.LayoutPreset.Center);
+			_weaponLabel.Text = "EXEC_PROTOCOL: FIREWALL";
+			_weaponLabel.AddThemeColorOverride("font_color", new Color("bf00ff")); // Rippier Purple
+			_weaponLabel.AddThemeFontSizeOverride("font_size", 20);
 			weaponPanel.AddChild(_weaponLabel);
 
-			// 5. BOTTOM LEFT: Minimap
-			_minimap = new Minimap();
-			_minimap.Name = "Minimap";
-			_minimap.Position = new Vector2(100, viewportSize.Y - 100); // Bottom Left
-			_minimap.DetectionRadius = 600f;
-			_minimap.MinimapSize = 150f;
-			AddChild(_minimap);
-
-			// 6. NOTIFICATION SYSTEM (Toast Style - Top Right, below Lives)
+			// 4. NOTIFICATION SYSTEM (Top Right)
 			_notificationContainer = new VBoxContainer();
 			_notificationContainer.Name = "NotificationContainer";
-			_notificationContainer.Position = new Vector2(viewportSize.X - 320, 80);
-			_notificationContainer.Size = new Vector2(300, 0); // Height grows automatically
-			_notificationContainer.AddThemeConstantOverride("separation", 10);
+			// Anchor Top Right
+			_notificationContainer.AnchorLeft = 1;
+			_notificationContainer.AnchorTop = 0;
+			_notificationContainer.AnchorRight = 1;
+			_notificationContainer.AnchorBottom = 0;
+			_notificationContainer.OffsetLeft = -370; // Width 350
+			_notificationContainer.OffsetTop = 80;
+			_notificationContainer.OffsetRight = -20;
+			_notificationContainer.OffsetBottom = 80; // Grows down
+
+			_notificationContainer.AddThemeConstantOverride("separation", 15);
 			AddChild(_notificationContainer);
 
 			UpdateUI(0, 1, 100, 0, 3, "Firewall");
@@ -149,10 +202,10 @@ namespace CyberSecurityGame.Views
 			// Estilo común de terminal
 			var terminalStyle = new StyleBoxFlat();
 			terminalStyle.BgColor = new Color(0.05f, 0.05f, 0.05f, 0.95f);
-			terminalStyle.BorderColor = new Color(0, 1, 0);
+			terminalStyle.BorderColor = new Color("bf00ff"); // Rippier Purple
 			terminalStyle.SetBorderWidthAll(2);
 			terminalStyle.SetCornerRadiusAll(4);
-			terminalStyle.ShadowColor = new Color(0, 1, 0, 0.2f);
+			terminalStyle.ShadowColor = new Color("bf00ff");
 			terminalStyle.ShadowSize = 10;
 
 			// Panel de Pausa
@@ -222,6 +275,8 @@ namespace CyberSecurityGame.Views
 			GameEventBus.Instance.OnLevelStarted += UpdateLevel;
 			GameEventBus.Instance.OnShieldActivated += OnShieldActivated;
 			GameEventBus.Instance.OnGameStateChanged += OnGameStateChanged;
+			GameEventBus.Instance.OnCpuLoadChanged += UpdateCpuLoad;
+			GameEventBus.Instance.OnCpuOverloadChanged += OnCpuOverload;
 		}
 
 		private void UpdateScore(int score)
@@ -237,6 +292,48 @@ namespace CyberSecurityGame.Views
 			if (_healthBar != null)
 			{
 				_healthBar.Value = health;
+			}
+		}
+
+		private void UpdateCpuLoad(float current, float max)
+		{
+			if (_cpuBar != null)
+			{
+				_cpuBar.MaxValue = max;
+				_cpuBar.Value = current;
+				
+				// Cambiar color según intensidad
+				var fillStyle = _cpuBar.GetThemeStylebox("fill") as StyleBoxFlat;
+				if (fillStyle != null)
+				{
+					float percentage = current / max;
+					if (percentage > 0.8f)
+						fillStyle.BgColor = new Color(1, 0, 0); // Rojo crítico
+					else if (percentage > 0.5f)
+						fillStyle.BgColor = new Color(1, 0.5f, 0); // Naranja
+					else
+						fillStyle.BgColor = new Color(0, 0.8f, 1); // Azul normal
+				}
+			}
+		}
+
+		private void OnCpuOverload(bool isOverloaded)
+		{
+			if (_cpuBar != null)
+			{
+				var fillStyle = _cpuBar.GetThemeStylebox("fill") as StyleBoxFlat;
+				if (fillStyle != null)
+				{
+					if (isOverloaded)
+					{
+						fillStyle.BgColor = new Color(1, 0, 1); // Magenta glitch
+						// Podríamos añadir una animación de parpadeo aquí
+					}
+					else
+					{
+						fillStyle.BgColor = new Color(0, 0.8f, 1); // Reset a azul
+					}
+				}
 			}
 		}
 
@@ -335,6 +432,8 @@ namespace CyberSecurityGame.Views
 			GameEventBus.Instance.OnLevelStarted -= UpdateLevel;
 			GameEventBus.Instance.OnShieldActivated -= OnShieldActivated;
 			GameEventBus.Instance.OnGameStateChanged -= OnGameStateChanged;
+			GameEventBus.Instance.OnCpuLoadChanged -= UpdateCpuLoad;
+			GameEventBus.Instance.OnCpuOverloadChanged -= OnCpuOverload;
 		}
 	}
 }

@@ -105,6 +105,50 @@ namespace CyberSecurityGame.Systems
 
 			SpawnWaveEnemies(enemyCount);
 			SpawnObstacles(3 + _currentWave); // Spawn obstacles based on wave intensity
+			
+			// Spawn Bonus Data Node
+			if (_currentWave % 2 == 0) // Every 2 waves
+			{
+				SpawnDataNode();
+			}
+
+			// Spawn Lore Terminal occasionally
+			if (_currentWave == 3)
+			{
+				SpawnLoreTerminal();
+			}
+		}
+
+		private void SpawnDataNode()
+		{
+			var node = new DataNode();
+			node.Position = GetRandomSpawnPosition();
+			// Ensure it's within reachable bounds (not too high up)
+			node.Position = new Vector2(node.Position.X, 100); 
+			GetTree().Root.GetNode("Main").AddChild(node);
+			GD.Print("💎 Data Node Spawned!");
+		}
+
+		private void SpawnLoreTerminal()
+		{
+			var terminal = new LoreTerminal();
+			terminal.Position = GetRandomSpawnPosition();
+			terminal.Position = new Vector2(terminal.Position.X, 150);
+			
+			// Set content based on level
+			if (_currentLevel == 1)
+			{
+				terminal.Title = "Log de Servidor 0451";
+				terminal.Content = "Detectamos tráfico inusual en el puerto 80. Parece que alguien está intentando un ataque de fuerza bruta. La contraseña 'admin123' no fue buena idea.";
+			}
+			else if (_currentLevel == 2)
+			{
+				terminal.Title = "Chat Interceptado";
+				terminal.Content = "User_X: ¿Ya subiste el payload?\nUser_Y: Sí, está oculto en la imagen del gato. Esteganografía básica.";
+			}
+			
+			GetTree().Root.GetNode("Main").AddChild(terminal);
+			GD.Print("📂 Lore Terminal Spawned!");
 		}
 
 		private void TriggerWaveDialogue(int level, int wave)
@@ -399,9 +443,11 @@ namespace CyberSecurityGame.Systems
 		private Vector2 GetRandomSpawnPosition()
 		{
 			var random = new System.Random();
+			var viewportSize = GetViewport().GetVisibleRect().Size;
 			
-			// Spawns desde arriba
-			float x = (float)random.NextDouble() * 1000 + 50;
+			// Spawns desde arriba, usando el ancho del viewport con margen
+			float margin = 50f;
+			float x = (float)random.NextDouble() * (viewportSize.X - margin * 2) + margin;
 			float y = -50; // Fuera de pantalla arriba
 			
 			return new Vector2(x, y);

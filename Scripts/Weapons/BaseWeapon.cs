@@ -17,6 +17,12 @@ namespace CyberSecurityGame.Weapons
 		protected int _maxAmmo;
 		protected bool _needsReload = false;
 		protected Node _sceneRoot; // Referencia al nodo raíz para instanciar proyectiles
+		protected Node2D _owner; // Referencia al dueño del arma
+
+		public virtual void SetOwner(Node2D owner)
+		{
+			_owner = owner;
+		}
 
 		public void SetSceneRoot(Node root)
 		{
