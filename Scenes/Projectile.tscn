@@ -1,10 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://projectile_scene_001"]
+[gd_scene load_steps=4 format=3 uid="uid://cqqitmjuhxuqh"]
 
-[ext_resource type="Script" path="res://Scripts/Entities/Projectile.cs" id="1_projectile"]
-[ext_resource type="Texture2D" path="res://Assets/projectile_data.svg" id="2_sprite"]
+[ext_resource type="Script" uid="uid://de5a60l23fxyl" path="res://Scripts/Entities/Projectile.cs" id="1_projectile"]
+[ext_resource type="Texture2D" uid="uid://55drcbmly4xm" path="res://Assets/Proyectil.png" id="2_k1cl8"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_projectile"]
-radius = 5.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_y0kec"]
+radius = 11.0
+height = 62.0
 
 [node name="Projectile" type="Area2D"]
 collision_layer = 2
@@ -12,14 +13,17 @@ collision_mask = 4
 script = ExtResource("1_projectile")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-modulate = Color(0, 1, 1, 1)
-scale = Vector2(0.8, 0.8)
-texture = ExtResource("2_sprite")
+position = Vector2(0.5000019, 1.2165833)
+scale = Vector2(0.8490566, 0.69052124)
+texture = ExtResource("2_k1cl8")
+region_enabled = true
+region_rect = Rect2(3, 4, 48, 90)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_projectile")
+shape = SubResource("CapsuleShape2D_y0kec")
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
-rect = Rect2(-10, -10, 20, 20)
+position = Vector2(740, 883)
+rect = Rect2(-762, -915, 45, 65)
 
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="queue_free"]

@@ -52,7 +52,7 @@ namespace CyberSecurityGame.Weapons
 
 		private void FirePrecision(Vector2 position, Vector2 direction)
 		{
-			var proj = SpawnProjectileCustom(position, direction, 800f, 15f, new Color("00ff41")); // Terminal Green
+			var proj = SpawnProjectileCustom(position, direction, 800f, 15f, new Color(1,1,1)); // Terminal Green
 		}
 
 		private void FireRapid(Vector2 position, Vector2 direction)

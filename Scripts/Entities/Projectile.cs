@@ -24,7 +24,7 @@ namespace CyberSecurityGame.Entities
 			_damageType = (DamageType)damageType;
 
 			// Rotar sprite hacia dirección
-			Rotation = direction.Angle();
+			Rotation = direction.Angle() + Mathf.Pi / 2;  // +90°
 
 			// Setup colisión - Usamos la forma ya existente en la escena si es posible
 			if (GetNodeOrNull<CollisionShape2D>("CollisionShape2D") == null)

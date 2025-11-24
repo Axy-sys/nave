@@ -132,13 +132,19 @@ namespace CyberSecurityGame.Entities
 				AddChild(collisionShape);
 			}
 		}
-
-		public override void _Process(double delta)
-		{
+		
+		public override void _Process(double delta){
 			HandleInput(delta);
 			UpdateComponents(delta);
+			
+			RotateTowardsMouse();
+			}
+		private void RotateTowardsMouse(){
+			Vector2 dir = GetGlobalMousePosition() - GlobalPosition;
+			Rotation = dir.Angle() + Mathf.Pi / 2; // Corrige 90°
 		}
 
+			
 		private void HandleInput(double delta)
 		{
 			// Movimiento
