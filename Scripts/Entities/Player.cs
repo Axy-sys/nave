@@ -144,63 +144,66 @@ namespace CyberSecurityGame.Entities
 			Rotation = dir.Angle() + Mathf.Pi / 2; // Corrige 90°
 		}
 
-			
-		private void HandleInput(double delta)
-		{
-			// Movimiento
-			Vector2 inputDirection = Vector2.Zero;
-			
-			if (Input.IsActionPressed("move_up"))
-				inputDirection.Y -= 1;
-			if (Input.IsActionPressed("move_down"))
-				inputDirection.Y += 1;
-			if (Input.IsActionPressed("move_left"))
-				inputDirection.X -= 1;
-			if (Input.IsActionPressed("move_right"))
-				inputDirection.X += 1;
-
-			inputDirection = inputDirection.Normalized();
-
-			// DASH MECHANIC (Spacebar)
-			if (Input.IsKeyPressed(Key.Space))
-			{
-				if (_movementComponent != null && _movementComponent.TryDash(inputDirection))
-				{
-					// Visual Feedback for Dash
-					Modulate = new Color(0, 1, 1, 0.5f); // Cyan transparent
-					GetTree().CreateTimer(0.2f).Timeout += () => Modulate = Colors.White;
-				}
-			}
-
-			_movementComponent?.Move(inputDirection, delta);
-
-			// PARRY MECHANIC (Shift)
-			if (Input.IsKeyPressed(Key.Shift))
-			{
-				if (_shieldComponent != null && _shieldComponent.TriggerParry())
-				{
-					// Visual Feedback for Parry
-					Modulate = new Color(1, 0.8f, 0, 1f); // Gold
-					GetTree().CreateTimer(0.2f).Timeout += () => Modulate = Colors.White;
-				}
-			}
-
-			// Disparo
-			if (Input.IsActionPressed("fire"))
-			{
-				Vector2 fireDirection = GetFireDirection();
-				_weaponComponent?.TryFire(fireDirection);
-			}
-
-			// Cambio de arma eliminado ("Less is More")
-			// El arma ahora es adaptativa y cambia con el Heat/CPU
-		}
-
 		private Vector2 GetFireDirection()
 		{
 			// Apuntar hacia el mouse para mayor intuición
 			return (GetGlobalMousePosition() - GlobalPosition).Normalized();
 		}
+private void HandleInput(double delta)
+{
+	Vector2 inputDirection = Vector2.Zero;
+
+	if (Input.IsActionPressed("move_up"))
+		inputDirection.Y -= 1;
+	if (Input.IsActionPressed("move_down"))
+		inputDirection.Y += 1;
+	if (Input.IsActionPressed("move_left"))
+		inputDirection.X -= 1;
+	if (Input.IsActionPressed("move_right"))
+		inputDirection.X += 1;
+
+	inputDirection = inputDirection.Normalized();
+
+	// ► FORWARD REAL según rotación (la nave apunta hacia ARRIBA del sprite)
+	Vector2 forward = Vector2.Up.Rotated(Rotation);
+
+	// ► RIGHT perpendicular al forward
+	Vector2 right = forward.Rotated(Mathf.Pi / 2);
+
+	// Movimiento WASD correcto
+	Vector2 moveDir =
+		forward * (-inputDirection.Y) +   // Y negativo porque W es -1 pero forward es UP
+		right * inputDirection.X;
+
+	_movementComponent?.Move(moveDir, delta);
+
+	// Dash
+	if (Input.IsKeyPressed(Key.Space))
+	{
+		if (_movementComponent != null && _movementComponent.TryDash(moveDir))
+		{
+			Modulate = new Color(0, 1, 1, 0.5f);
+			GetTree().CreateTimer(0.2f).Timeout += () => Modulate = Colors.White;
+		}
+	}
+
+	// Parry
+	if (Input.IsKeyPressed(Key.Shift))
+	{
+		if (_shieldComponent != null && _shieldComponent.TriggerParry())
+		{
+			Modulate = new Color(1, 0.8f, 0, 1f);
+			GetTree().CreateTimer(0.2f).Timeout += () => Modulate = Colors.White;
+		}
+	}
+
+	// Disparo
+	if (Input.IsActionPressed("fire"))
+	{
+		Vector2 fireDirection = GetFireDirection();
+		_weaponComponent?.TryFire(fireDirection);
+	}
+}
 
 		private void UpdateComponents(double delta)
 		{
