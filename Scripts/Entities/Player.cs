@@ -1,4 +1,4 @@
-using Godot;
+using Godot; 
 using CyberSecurityGame.Components;
 using CyberSecurityGame.Weapons;
 using CyberSecurityGame.Core.Events;
@@ -18,7 +18,7 @@ namespace CyberSecurityGame.Entities
 		private ShieldComponent _shieldComponent;
 		private CpuComponent _cpuComponent;
 
-		// Configuración
+		// Configuración -----------> VELOCIDAD AUMENTADA
 		[Export] public float MaxHealth = 100f;
 		[Export] public float Speed = 450f;           // MÁS rápido - arcade fluido
 		[Export] public float AfterburnerSpeed = 700f; // Heroico
@@ -102,8 +102,8 @@ namespace CyberSecurityGame.Entities
 				_weaponComponent.FireRate = 0.15f;
 			}
 			_weaponComponent.Initialize(this);
-			
-			// Equipar arma adaptativa por defecto
+
+			// Equipar arma adaptativa
 			_weaponComponent.SetWeapon(new AdaptiveWeapon());
 
 			_shieldComponent = GetNodeOrNull<ShieldComponent>("ShieldComponent");
@@ -139,7 +139,6 @@ namespace CyberSecurityGame.Entities
 
 		private void SetupCollision()
 		{
-			// Verificar si ya existe CollisionShape2D en la escena
 			var existingCollision = GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
 			if (existingCollision == null)
 			{
@@ -367,11 +366,8 @@ private void HandleInput(double delta)
 			
 			// El escudo absorbe primero
 			if (_shieldComponent != null && _shieldComponent.IsActive())
-			{
 				amount = _shieldComponent.AbsorbDamage(amount);
-			}
 
-			// El daño restante va a la salud
 			if (amount > 0)
 			{
 				_healthComponent?.TakeDamage(amount, damageType);
