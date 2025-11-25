@@ -3,287 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PROJECT: R.I.P. - Real-time Intrusion Prevention. Simulador táctico desarrollado por CodeRippier.">
-    <title>PROJECT: R.I.P. :: CodeRippier</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <meta name="description" content="Code Rippier - Juego educativo de ciberseguridad. Aprende sobre amenazas digitales mientras defiendes sistemas críticos.">
+    <meta name="keywords" content="cybersecurity, game, educational, godot, csharp, open source, code rippier">
+    <meta name="author" content="CodeRippier Team">
+    <title>Code Rippier | Cybersecurity Defense Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #050505;
-            --terminal-green: #00ff41;
-            --terminal-dim: #008F11;
-            --flux-orange: #ffaa00;
-            --alert-red: #ff0000;
-            --glitch-magenta: #ff00ff;
-            --rippier-purple: #bf00ff;
-            --rippier-dark: #2a0038;
-            --scanline-color: rgba(0, 255, 65, 0.05);
-            --glass-bg: rgba(0, 20, 0, 0.8);
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --accent-green: #00ff88;
+            --accent-green-dim: #00aa5c;
+            --accent-purple: #a855f7;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border-color: #2a2a2a;
+            --gradient-green: linear-gradient(135deg, #00ff88 0%, #00aa5c 100%);
+            --gradient-purple: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            --gradient-orange: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            scrollbar-width: thin;
-            scrollbar-color: var(--terminal-green) var(--bg-color);
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: #e0e0e0;
-            font-family: 'Fira Code', monospace;
-            overflow-x: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        /* CRT Effect Overlay */
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: repeating-linear-gradient(
-                0deg,
-                var(--scanline-color) 0px,
-                var(--scanline-color) 1px,
-                transparent 2px,
-                transparent 4px
-            );
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.7;
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Glitch Animation Keyframes */
-        @keyframes glitch {
-            0% { transform: translate(0) }
-            20% { transform: translate(-2px, 2px) }
-            40% { transform: translate(-2px, -2px) }
-            60% { transform: translate(2px, 2px) }
-            80% { transform: translate(2px, -2px) }
-            100% { transform: translate(0) }
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        /* Typography */
-        h1, h2, h3, h4 {
-            font-family: 'Share Tech Mono', monospace;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .text-green { color: var(--terminal-green); }
-        .text-orange { color: var(--flux-orange); }
-        .text-red { color: var(--alert-red); }
-
-        /* Header */
-        header {
+        /* Navigation */
+        nav {
             position: fixed;
             top: 0;
             width: 100%;
-            background: rgba(5, 5, 5, 0.95);
-            border-bottom: 1px solid var(--terminal-dim);
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
             z-index: 1000;
-            padding: 1rem 2rem;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(5px);
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--terminal-green);
-            text-shadow: 0 0 10px var(--terminal-green);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .logo::before {
-            content: ">";
-            animation: blink 1s infinite;
+        .logo-prefix {
+            color: var(--accent-purple);
         }
 
-        nav ul {
+        .nav-links {
             display: flex;
             gap: 2rem;
             list-style: none;
         }
 
-        nav a {
-            color: #fff;
+        .nav-links a {
+            color: var(--text-secondary);
             text-decoration: none;
             font-size: 0.9rem;
-            transition: color 0.3s;
-            position: relative;
+            font-weight: 500;
+            transition: color 0.2s;
         }
 
-        nav a:hover {
-            color: var(--terminal-green);
+        .nav-links a:hover {
+            color: var(--accent-green);
         }
 
-        nav a::before {
-            content: "[";
-            margin-right: 5px;
-            opacity: 0;
-            color: var(--terminal-green);
-            transition: opacity 0.3s;
+        .nav-cta {
+            background: var(--gradient-green);
+            color: #000;
+            padding: 0.6rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        nav a::after {
-            content: "]";
-            margin-left: 5px;
-            opacity: 0;
-            color: var(--terminal-green);
-            transition: opacity 0.3s;
-        }
-        nav a:hover::before, nav a:hover::after {
-            opacity: 1;
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
         }
 
         /* Hero Section */
         .hero {
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 0 2rem;
-            background: radial-gradient(circle at center, #0a1a0a 0%, #000 100%);
+            padding: 8rem 2rem 4rem;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(0, 255, 136, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                var(--bg-primary);
         }
 
-        .hero-content {
+        .hero-container {
             max-width: 1200px;
+            margin: 0 auto;
             width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
         }
 
-        .hero-text h1 {
-            font-size: 4rem;
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            margin-bottom: 2rem;
+        }
+
+        .hero-badge::before {
+            content: "●";
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700;
             line-height: 1.1;
             margin-bottom: 1.5rem;
-            position: relative;
+            max-width: 800px;
         }
 
-        .glitch-text {
-            position: relative;
-            color: #fff;
-        }
-        
-        .glitch-text::before, .glitch-text::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        .hero h1 span {
+            background: var(--gradient-green);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .glitch-text::before {
-            left: 2px;
-            text-shadow: -1px 0 var(--alert-red);
-            clip: rect(24px, 550px, 90px, 0);
-            animation: glitch 3s infinite linear alternate-reverse;
-        }
-
-        .glitch-text::after {
-            left: -2px;
-            text-shadow: -1px 0 var(--terminal-green);
-            clip: rect(85px, 550px, 140px, 0);
-            animation: glitch 2s infinite linear alternate-reverse;
-        }
-
-        .hero-text p {
-            font-size: 1.2rem;
-            color: #aaa;
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
             margin-bottom: 2.5rem;
-            border-left: 3px solid var(--terminal-green);
-            padding-left: 1rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
         .btn {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             padding: 1rem 2rem;
-            background: transparent;
-            border: 1px solid var(--terminal-green);
-            color: var(--terminal-green);
+            border-radius: 8px;
+            font-weight: 600;
             text-decoration: none;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-            margin-right: 1rem;
+            transition: all 0.2s;
+            font-size: 1rem;
         }
 
-        .btn:hover {
-            background: var(--terminal-green);
+        .btn-primary {
+            background: var(--gradient-green);
             color: #000;
-            box-shadow: 0 0 20px var(--terminal-green);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 255, 136, 0.3);
         }
 
         .btn-secondary {
-            border-color: var(--flux-orange);
-            color: var(--flux-orange);
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
         .btn-secondary:hover {
-            background: var(--flux-orange);
-            color: #000;
-            box-shadow: 0 0 20px var(--flux-orange);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
         }
 
-        /* Terminal Window Mockup */
-        .terminal-window {
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid var(--terminal-dim);
-            border-radius: 5px;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
-            overflow: hidden;
-        }
-
-        .terminal-header {
-            background: #1a1a1a;
-            padding: 0.5rem 1rem;
-            display: flex;
-            gap: 0.5rem;
-            border-bottom: 1px solid #333;
-        }
-
-        .dot { width: 12px; height: 12px; border-radius: 50%; }
-        .red { background: #ff5f56; }
-        .yellow { background: #ffbd2e; }
-        .green { background: #27c93f; }
-
-        .terminal-body {
-            padding: 1.5rem;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
-        }
-
-        .code-line {
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .prompt { color: var(--terminal-green); margin-right: 0.5rem; }
-        .cmd { color: #fff; }
-        .output { color: #aaa; margin-left: 1rem; }
-        .cursor { animation: blink 1s infinite; }
-
-        /* Features Grid */
-        .features {
+        /* Section Styles */
+        section {
             padding: 6rem 2rem;
+        }
+
+        .section-container {
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -293,602 +238,1243 @@
             margin-bottom: 4rem;
         }
 
-        .section-header h2 {
-            font-size: 2.5rem;
-            color: var(--terminal-green);
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
             margin-bottom: 1rem;
         }
 
-        .grid {
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        /* About Section */
+        #about {
+            background: var(--bg-secondary);
+        }
+
+        .about-content {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-text h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-green);
+        }
+
+        .about-text p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+        }
+
+        .about-terminal {
+            background: #0d0d0d;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #1a1a1a;
+            padding: 0.75rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ff5f56; }
+        .terminal-dot.yellow { background: #ffbd2e; }
+        .terminal-dot.green { background: #27c93f; }
+
+        .terminal-body {
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .terminal-line {
+            margin-bottom: 0.5rem;
+        }
+
+        .terminal-prompt {
+            color: var(--accent-green);
+        }
+
+        .terminal-output {
+            color: var(--text-secondary);
+            padding-left: 1rem;
+        }
+
+        /* Innovation Section - Para Concurso */
+        #innovation {
+            background: linear-gradient(180deg, var(--bg-primary) 0%, #0a0f0a 100%);
+        }
+
+        .innovation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 2rem;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid #333;
-            padding: 2rem;
-            transition: all 0.3s;
+        .innovation-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
             position: relative;
+            overflow: hidden;
         }
 
-        .card:hover {
-            border-color: var(--terminal-green);
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.1);
-        }
-
-        .card::before {
+        .innovation-card::before {
             content: "";
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 2px;
-            background: var(--terminal-green);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s;
+            height: 4px;
+            background: var(--gradient-green);
         }
 
-        .card:hover::before {
-            transform: scaleX(1);
+        .innovation-card.highlight::before {
+            background: var(--gradient-purple);
         }
 
-        .icon {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            display: block;
+        .innovation-card.warning::before {
+            background: var(--gradient-orange);
         }
 
-        .card h3 {
-            color: #fff;
-            margin-bottom: 1rem;
-        }
-
-        .card p {
-            color: #888;
-            font-size: 0.95rem;
-        }
-
-        /* Stats Section */
-        .stats {
-            background: #0a0a0a;
-            border-top: 1px solid #222;
-            border-bottom: 1px solid #222;
-            padding: 4rem 0;
-            margin: 4rem 0;
-        }
-
-        .stats-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 2rem;
-            text-align: center;
-        }
-
-        .stat-item h4 {
+        .innovation-number {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 3rem;
-            color: var(--flux-orange);
+            font-weight: 700;
+            background: var(--gradient-green);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.5rem;
         }
 
-        .stat-item p {
-            color: #666;
+        .innovation-card.highlight .innovation-number {
+            background: var(--gradient-purple);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .innovation-card.warning .innovation-number {
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .innovation-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .innovation-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Architecture Section - Para Concurso */
+        #architecture {
+            background: var(--bg-secondary);
+        }
+
+        .architecture-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .architecture-diagram {
+            background: #0d0d0d;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .diagram-title {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-green);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-size: 0.8rem;
+        }
+
+        .diagram-layer {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .diagram-layer-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .diagram-layer-tech {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-purple);
+            background: rgba(168, 85, 247, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+        }
+
+        .architecture-patterns {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .pattern-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .pattern-item h4 {
+            color: var(--accent-green);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pattern-item p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Educational Impact - Para Concurso */
+        #impact {
+            background: linear-gradient(180deg, var(--bg-primary) 0%, #0f0a15 100%);
+        }
+
+        .impact-showcase {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .impact-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .impact-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-purple);
+        }
+
+        .impact-card h3 {
+            color: var(--accent-purple);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .impact-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .impact-list {
+            list-style: none;
+        }
+
+        .impact-list li {
+            padding: 0.4rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .impact-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        /* Gameplay Section */
+        #gameplay {
+            background: var(--bg-secondary);
+        }
+
+        .gameplay-showcase {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .gameplay-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gameplay-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-green);
+        }
+
+        .gameplay-card.threat::before {
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+        }
+
+        .gameplay-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .gameplay-card ul {
+            list-style: none;
+            color: var(--text-secondary);
+        }
+
+        .gameplay-card li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .gameplay-card li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-green);
+        }
+
+        .gameplay-card.threat li::before {
+            color: var(--accent-red);
+        }
+
+        /* Team Section */
+        #team {
+            background: var(--bg-primary);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .team-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .team-card:hover {
+            border-color: var(--accent-purple);
+            transform: translateY(-4px);
+        }
+
+        .team-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .team-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-role {
+            color: var(--accent-purple);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+
+        .team-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Tech Specs */
+        #specs {
+            background: var(--bg-secondary);
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .spec-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .spec-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            text-transform: uppercase;
+        }
+
+        .spec-value {
+            color: var(--text-primary);
+            font-weight: 500;
+            text-align: right;
+        }
+
+        /* Download Section */
+        #download {
+            text-align: center;
+        }
+
+        .download-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 4rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .download-box h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .download-box p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .platform-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .platform-btn:hover {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .platform-btn span {
+            font-size: 1.5rem;
         }
 
         /* Footer */
         footer {
-            background: #000;
-            padding: 4rem 2rem;
-            border-top: 1px solid var(--terminal-dim);
-            text-align: center;
+            background: #050505;
+            border-top: 1px solid var(--border-color);
+            padding: 4rem 2rem 2rem;
         }
 
-        .footer-links {
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-top {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
             gap: 2rem;
-            margin-bottom: 2rem;
+        }
+
+        .footer-brand p {
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            max-width: 300px;
+            font-size: 0.9rem;
+        }
+
+        .footer-links h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links ul {
+            list-style: none;
         }
 
         .footer-links a {
-            color: #666;
+            color: var(--text-secondary);
             text-decoration: none;
-            transition: color 0.3s;
+            font-size: 0.9rem;
+            display: block;
+            padding: 0.3rem 0;
+            transition: color 0.2s;
         }
 
         .footer-links a:hover {
-            color: var(--terminal-green);
+            color: var(--accent-green);
         }
 
-        .copyright {
-            color: #444;
-            font-size: 0.8rem;
+        .footer-bottom {
+            border-top: 1px solid var(--border-color);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-bottom p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
 
         /* Responsive */
-        @media (max-width: 768px) {
-            .hero-content {
+        @media (max-width: 968px) {
+            .nav-links {
+                display: none;
+            }
+
+            .about-content,
+            .architecture-content {
                 grid-template-columns: 1fr;
-                text-align: center;
-            }
-            
-            .hero-text p {
-                border-left: none;
-                padding-left: 0;
             }
 
-            .hero-text h1 {
-                font-size: 2.5rem;
+            .gameplay-showcase,
+            .impact-showcase {
+                grid-template-columns: 1fr;
             }
 
-            nav {
-                display: none; /* Simple hide for mobile for now */
+            .innovation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer-top {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
-
-    <header>
-        <div class="logo">
-            <span style="color: var(--rippier-purple);">PROJECT:</span>R.I.P.
-        </div>
-        <nav>
-            <ul>
-                <li><a href="#systems">SISTEMAS</a></li>
-                <li><a href="#architecture">ARQUITECTURA</a></li>
-                <li><a href="#team">EQUIPO</a></li>
-                <li><a href="https://github.com/Axy-sys/nave">REPO</a></li>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <span class="logo-prefix">Code</span>Rippier
+            </a>
+            <ul class="nav-links">
+                <li><a href="#about">Acerca de</a></li>
+                <li><a href="#innovation">Innovación</a></li>
+                <li><a href="#architecture">Arquitectura</a></li>
+                <li><a href="#impact">Impacto</a></li>
+                <li><a href="#team">Equipo</a></li>
             </ul>
-        </nav>
-    </header>
+            <a href="https://github.com/Axy-sys/nave" class="nav-cta" target="_blank">Ver en GitHub</a>
+        </div>
+    </nav>
 
+    <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-content">
-            <div class="hero-text">
-                <h4 class="text-green">> INCOMING TRANSMISSION...</h4>
-                <h1 class="glitch-text" data-text="PROJECT: R.I.P.">PROJECT: R.I.P.</h1>
-                <p>
-                    <strong style="color: var(--rippier-purple);">[Real-time Intrusion Prevention]</strong><br>
-                    Simulador táctico de defensa desarrollado por <strong>CodeRippier</strong>. Gestiona el Flux, ejecuta protocolos de seguridad y neutraliza amenazas en tiempo real.
-                    <br><br>
-                    <span class="text-orange">ADVERTENCIA:</span> La sobrecarga del sistema es inminente.
+        <div class="hero-container">
+            <div class="hero-badge">Proyecto Educativo Open Source</div>
+            <h1>Code Rippier<br><span>Cybersecurity Defense Game</span></h1>
+            <p class="hero-description">
+                Un simulador táctico donde gestionas recursos del sistema mientras aprendes 
+                sobre amenazas reales como Phishing, Ransomware y ataques DDoS. 
+                Educación en ciberseguridad a través del juego.
+            </p>
+            <div class="hero-buttons">
+                <a href="https://github.com/Axy-sys/nave/releases" class="btn btn-primary">
+                    ⬇ Descargar Gratis
+                </a>
+                <a href="#innovation" class="btn btn-secondary">
+                    Ver Innovación →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="section-container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>¿Qué es Code Rippier?</h3>
+                    <p>
+                        <strong>Code Rippier</strong> es un juego de acción táctica educativo 
+                        que te pone en el rol de un operador de seguridad defendiendo sistemas 
+                        críticos contra amenazas cibernéticas reales.
+                    </p>
+                    <p>
+                        A diferencia de otros juegos, aquí no hay cooldowns tradicionales. Tu recurso 
+                        principal es el <strong>CPU (Flux)</strong>: cada disparo, cada escudo, cada 
+                        movimiento consume ciclos de procesamiento. Sobrecarga el sistema y quedarás 
+                        expuesto.
+                    </p>
+                    <p>
+                        Mientras juegas, aprenderás cómo funcionan las amenazas reales y las mejores 
+                        prácticas para protegerte en el mundo digital.
+                    </p>
+                </div>
+                <div class="about-terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dot red"></div>
+                        <div class="terminal-dot yellow"></div>
+                        <div class="terminal-dot green"></div>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">rippier@sys:~$</span> ./init_defense
+                        </div>
+                        <div class="terminal-line terminal-output">Loading Code Rippier v1.0...</div>
+                        <div class="terminal-line terminal-output">Security modules... [OK]</div>
+                        <div class="terminal-line terminal-output">CPU Load: 12%</div>
+                        <div class="terminal-line terminal-output">Shield: ONLINE</div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">rippier@sys:~$</span> scan --threats
+                        </div>
+                        <div class="terminal-line terminal-output" style="color: var(--accent-red);">⚠ Phishing swarm incoming...</div>
+                        <div class="terminal-line terminal-output" style="color: var(--accent-red);">⚠ Ransomware detected</div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">rippier@sys:~$</span> <span style="animation: pulse 1s infinite;">_</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Innovation Section - Para Concurso -->
+    <section id="innovation">
+        <div class="section-container">
+            <div class="section-header">
+                <p class="section-label">Puntos de Evaluación</p>
+                <h2 class="section-title">¿Por qué Code Rippier es Innovador?</h2>
+                <p class="section-description">
+                    Aspectos clave que hacen de este proyecto una propuesta única en el ámbito 
+                    de juegos educativos y desarrollo de software.
                 </p>
-                <div class="cta-group">
-                    <a href="https://github.com/Axy-sys/nave" class="btn">INICIAR SISTEMA</a>
-                    <a href="#systems" class="btn btn-secondary">VER PROTOCOLOS</a>
-                </div>
             </div>
-            
-            <div class="terminal-window">
-                <div class="terminal-header">
-                    <div class="dot red"></div>
-                    <div class="dot yellow"></div>
-                    <div class="dot green"></div>
+
+            <div class="innovation-grid">
+                <div class="innovation-card">
+                    <div class="innovation-number">01</div>
+                    <h3>Mecánica Original</h3>
+                    <p>Sistema de CPU (Flux) que reemplaza cooldowns tradicionales. Gestión de recursos en tiempo real que simula la carga de un sistema informático.</p>
                 </div>
-                <div class="terminal-body">
-                    <span class="code-line"><span class="prompt">user@sys:~$</span><span class="cmd"> ./init_defense.sh</span></span>
-                    <span class="code-line"><span class="output">Loading core modules... [OK]</span></span>
-                    <span class="code-line"><span class="output">Initializing Shield Component... [OK]</span></span>
-                    <span class="code-line"><span class="output">Checking CPU Load... 0%</span></span>
-                    <span class="code-line"><span class="output">Weapon Systems: <span class="text-green">ONLINE</span></span></span>
-                    <span class="code-line"><span class="output">Threat Level: <span class="text-red">CRITICAL</span></span></span>
-                    <span class="code-line"><span class="prompt">user@sys:~$</span><span class="cmd"> run_tutorial --accessible</span></span>
-                    <span class="code-line"><span class="output">Tutorial loaded. Accessibility mode: ON</span></span>
-                    <span class="code-line"><span class="prompt">user@sys:~$</span><span class="cursor">_</span></span>
+                <div class="innovation-card highlight">
+                    <div class="innovation-number">02</div>
+                    <h3>Propósito Educativo</h3>
+                    <p>Cada enemigo representa una amenaza real (Phishing, Ransomware, DDoS). Los jugadores aprenden ciberseguridad mientras se divierten.</p>
+                </div>
+                <div class="innovation-card warning">
+                    <div class="innovation-number">03</div>
+                    <h3>Arquitectura Profesional</h3>
+                    <p>Implementación de patrones de diseño (MVC, Strategy, Observer, Factory) y principios SOLID. Código limpio y mantenible.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="systems" class="features">
-        <div class="section-header">
-            <h2>PROTOCOLOS DE DEFENSA</h2>
-            <p class="text-green">/// ACCEDIENDO A LA BASE DE DATOS DE MECÁNICAS ///</p>
-        </div>
+    <!-- Features Section -->
+    <section id="features">
+        <div class="section-container">
+            <div class="section-header">
+                <p class="section-label">Características</p>
+                <h2 class="section-title">Funcionalidades Principales</h2>
+                <p class="section-description">
+                    Cada mecánica está diseñada para enseñar conceptos reales de ciberseguridad 
+                    mientras proporciona una experiencia de juego entretenida.
+                </p>
+            </div>
 
-        <div class="grid">
-            <div class="card">
-                <span class="icon">⚡</span>
-                <h3>Gestión de CPU (Flux)</h3>
-                <p>Cada disparo y acción genera calor. Si alcanzas el 100%, tu sistema se sobrecargará y quedarás expuesto. Gestiona tus recursos sabiamente.</p>
-            </div>
-            <div class="card">
-                <span class="icon">🛡️</span>
-                <h3>Parry Táctico</h3>
-                <p>Activa tu escudo en el último segundo para reflejar ataques y <span class="text-green">ventilar calor</span> instantáneamente. El riesgo tiene recompensa.</p>
-            </div>
-            <div class="card">
-                <span class="icon">💨</span>
-                <h3>Dash de Emergencia</h3>
-                <p>Realiza saltos rápidos para atravesar firewalls enemigos. Cuidado: consume ciclos de CPU valiosos.</p>
-            </div>
-            <div class="card">
-                <span class="icon">🎓</span>
-                <h3>Aprendizaje Real</h3>
-                <p>Enfréntate a Ransomware, Phishing y DDoS. Aprende cómo funcionan estas amenazas mientras luchas por sobrevivir.</p>
-            </div>
-            <div class="card">
-                <span class="icon">🔧</span>
-                <h3>Arquitectura Sólida</h3>
-                <p>Construido sobre principios SOLID y patrones de diseño (MVC, Strategy, Observer). Código limpio para una defensa limpia.</p>
-            </div>
-            <div class="card">
-                <span class="icon">♿</span>
-                <h3>Accesibilidad Total</h3>
-                <p>Tutoriales interactivos, ayudas visuales y sistemas anti-frustración. La ciberseguridad es para todos.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Threat Database -->
-    <section id="intel" class="features" style="background: linear-gradient(180deg, var(--bg-color) 0%, #0a0505 100%);">
-        <div class="section-header">
-            <h2>BASE DE DATOS DE AMENAZAS</h2>
-            <p class="text-red">/// ANÁLISIS DE MALWARE DETECTADO ///</p>
-        </div>
-
-        <div class="grid">
-            <div class="card" style="border-color: var(--alert-red);">
-                <span class="icon" style="color: var(--alert-red);">👾</span>
-                <h3 class="text-red">Phishing Swarm</h3>
-                <p>Unidades ligeras y rápidas. Atacan en enjambre intentando saturar tus filtros de entrada. Prioridad: <span class="text-orange">MEDIA</span>.</p>
-            </div>
-            <div class="card" style="border-color: var(--alert-red);">
-                <span class="icon" style="color: var(--alert-red);">🔒</span>
-                <h3 class="text-red">Ransomware Tank</h3>
-                <p>Unidad pesada con blindaje encriptado. Requiere fuego concentrado para romper sus claves de defensa. Prioridad: <span class="text-red">ALTA</span>.</p>
-            </div>
-            <div class="card" style="border-color: var(--alert-red);">
-                <span class="icon" style="color: var(--alert-red);">⚡</span>
-                <h3 class="text-red">DDoS Blaster</h3>
-                <p>Genera tráfico masivo de proyectiles. Su objetivo es sobrecargar tu CPU (Flux) obligándote a usar el escudo. Prioridad: <span class="text-red">CRÍTICA</span>.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Arsenal -->
-    <section id="arsenal" class="features">
-        <div class="section-header">
-            <h2>ARSENAL DEFENSIVO</h2>
-            <p class="text-green">/// HERRAMIENTAS AUTORIZADAS ///</p>
-        </div>
-
-        <div class="terminal-window" style="max-width: 800px; margin: 0 auto;">
-            <div class="terminal-body">
-                <div class="code-line">
-                    <span class="prompt">sysadmin@def:~$</span> <span class="cmd">list_weapons --details</span>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Gestión de CPU (Flux)</h3>
+                    <p>
+                        Sistema de recursos único que reemplaza los cooldowns tradicionales. 
+                        Cada acción genera calor. Gestiona sabiamente o sufrirás sobrecarga.
+                    </p>
                 </div>
-                <br>
-                <div class="code-line">
-                    <span class="text-green">[1] PULSE_LASER_V1</span><br>
-                    <span class="output">Type: Standard Emitter</span><br>
-                    <span class="output">Cost: 5% CPU/Shot</span><br>
-                    <span class="output">Desc: Disparo rápido de bajo coste. Ideal para supresión.</span>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Parry Táctico</h3>
+                    <p>
+                        Activa el escudo en el momento preciso para reflejar proyectiles 
+                        y ventilar calor instantáneamente. Alto riesgo, alta recompensa.
+                    </p>
                 </div>
-                <br>
-                <div class="code-line">
-                    <span class="text-orange">[2] PLASMA_CANNON_X</span><br>
-                    <span class="output">Type: Heavy Burst</span><br>
-                    <span class="output">Cost: 25% CPU/Shot</span><br>
-                    <span class="output">Desc: Alto daño de impacto. Riesgo de sobrecarga inmediato.</span>
+                <div class="feature-card">
+                    <div class="feature-icon">🎓</div>
+                    <h3>Sistema Educativo</h3>
+                    <p>
+                        Quiz system contextual, tips de seguridad en tiempo real y 
+                        descripciones educativas de cada tipo de malware que enfrentas.
+                    </p>
                 </div>
-                <br>
-                <div class="code-line">
-                    <span class="text-green">[3] SHIELD_MATRIX</span><br>
-                    <span class="output">Type: Active Defense</span><br>
-                    <span class="output">Cost: Passive Drain</span><br>
-                    <span class="output">Desc: Absorbe daño convirtiéndolo en calor. <span class="text-green">PARRY</span> disponible.</span>
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Código Profesional</h3>
+                    <p>
+                        Construido con patrones de diseño (MVC, Strategy, Observer, Factory) 
+                        y principios SOLID. Documentación completa.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">♿</div>
+                    <h3>Accesibilidad</h3>
+                    <p>
+                        Tutorial interactivo con sistema de pistas, feedback visual 
+                        redundante y configuraciones para diferentes necesidades.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Open Source</h3>
+                    <p>
+                        Código completamente abierto bajo licencia MIT. Contribuye, 
+                        aprende del código o crea tus propios mods.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Educational Core -->
-    <section id="education" class="features">
-        <div class="section-header">
-            <h2>NÚCLEO EDUCATIVO</h2>
-            <p class="text-green">/// APRENDIZAJE INTEGRADO ///</p>
-        </div>
+    <!-- Architecture Section - Para Concurso -->
+    <section id="architecture">
+        <div class="section-container">
+            <div class="section-header">
+                <p class="section-label">Arquitectura Técnica</p>
+                <h2 class="section-title">Diseño del Sistema</h2>
+                <p class="section-description">
+                    Estructura técnica profesional siguiendo las mejores prácticas 
+                    de la industria del desarrollo de software.
+                </p>
+            </div>
 
-        <div class="grid">
-            <div class="card">
-                <span class="icon">🧠</span>
-                <h3>Quiz System</h3>
-                <p>Sistema de preguntas contextuales que aparecen durante el combate. Responde correctamente para ganar mejoras de sistema y recuperar integridad.</p>
-            </div>
-            <div class="card">
-                <span class="icon">💡</span>
-                <h3>Security Tips</h3>
-                <p>Consejos de seguridad en tiempo real basados en el tipo de enemigo que enfrentas. Aprende a identificar Phishing mientras lo destruyes.</p>
-            </div>
-            <div class="card">
-                <span class="icon">🔓</span>
-                <h3>Vulnerability Patching</h3>
-                <p>Mecánica única donde debes "parchear" vulnerabilidades del sistema (bugs visuales) antes de que los exploits enemigos las aprovechen.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Technical Architecture Section for Judges -->
-    <section id="architecture" class="features" style="padding-top: 0;">
-        <div class="section-header">
-            <h2>ARQUITECTURA DEL SISTEMA</h2>
-            <p class="text-orange">/// ACCESO RESTRINGIDO: REPORTE TÉCNICO ///</p>
-        </div>
-        
-        <div class="terminal-window" style="max-width: 1000px; margin: 0 auto;">
-            <div class="terminal-header">
-                <div class="dot red"></div>
-                <div class="dot yellow"></div>
-                <div class="dot green"></div>
-                <span style="color: #666; font-size: 0.8rem; margin-left: 10px;">sys_architecture.log</span>
-            </div>
-            <div class="terminal-body">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <div>
-                        <h3 class="text-green" style="margin-bottom: 1rem;">> PATRONES DE DISEÑO</h3>
-                        <ul style="list-style: none; color: #aaa; line-height: 2;">
-                            <li class="code-line"><span class="prompt">-></span> <strong class="text-green">Strategy Pattern:</strong> <code>IWeapon</code> permite cambiar algoritmos de disparo en runtime (Firewall, Antivirus).</li>
-                            <li class="code-line"><span class="prompt">-></span> <strong class="text-green">Observer Pattern:</strong> <code>GameEventBus</code> desacopla UI, Audio y Lógica de Juego.</li>
-                            <li class="code-line"><span class="prompt">-></span> <strong class="text-green">Component Pattern:</strong> Entidades compuestas por <code>Health</code>, <code>Shield</code>, <code>CPU</code>.</li>
-                            <li class="code-line"><span class="prompt">-></span> <strong class="text-green">Factory Pattern:</strong> <code>EnemyFactory</code> centraliza la creación de amenazas complejas.</li>
-                        </ul>
+            <div class="architecture-content">
+                <div class="architecture-diagram">
+                    <div class="diagram-title">// Capas del Sistema</div>
+                    <div class="diagram-layer">
+                        <span class="diagram-layer-name">🎮 Presentation Layer</span>
+                        <span class="diagram-layer-tech">UI / Views</span>
                     </div>
-                    <div>
-                        <h3 class="text-orange" style="margin-bottom: 1rem;">> CALIDAD DE CÓDIGO</h3>
-                        <ul style="list-style: none; color: #aaa; line-height: 2;">
-                            <li class="code-line"><span class="prompt">-></span> <strong class="text-orange">S.O.L.I.D.:</strong> Adherencia estricta. Single Responsibility en cada componente.</li>
-                            <li class="code-line"><span class="prompt">-></span> <strong class="text-orange">MVC:</strong> Separación total: <code>GameStateModel</code> (Datos) vs <code>GameHUD</code> (Vista).</li>
-                            <li class="code-line"><span class="prompt">-></span> <strong class="text-orange">Dependency Injection:</strong> Componentes desacoplados para facilitar Unit Testing.</li>
-                            <li class="code-line"><span class="prompt">-></span> <strong class="text-orange">Clean Code:</strong> Naming conventions de C# y documentación XML.</li>
-                        </ul>
+                    <div class="diagram-layer">
+                        <span class="diagram-layer-name">🎯 Game Logic Layer</span>
+                        <span class="diagram-layer-tech">Controllers</span>
+                    </div>
+                    <div class="diagram-layer">
+                        <span class="diagram-layer-name">📦 Domain Layer</span>
+                        <span class="diagram-layer-tech">Entities / Components</span>
+                    </div>
+                    <div class="diagram-layer">
+                        <span class="diagram-layer-name">⚙️ Core Layer</span>
+                        <span class="diagram-layer-tech">GameManager / EventBus</span>
+                    </div>
+                    <div class="diagram-layer">
+                        <span class="diagram-layer-name">🔌 Infrastructure</span>
+                        <span class="diagram-layer-tech">Godot Engine 4.x</span>
+                    </div>
+                </div>
+
+                <div class="architecture-patterns">
+                    <div class="pattern-item">
+                        <h4>📐 MVC Pattern</h4>
+                        <p>Separación clara entre Modelo (datos del juego), Vista (UI/HUD) y Controlador (lógica de interacción).</p>
+                    </div>
+                    <div class="pattern-item">
+                        <h4>🔄 Strategy Pattern</h4>
+                        <p>Sistema de armas intercambiables (IWeapon) que permite añadir nuevas armas sin modificar código existente.</p>
+                    </div>
+                    <div class="pattern-item">
+                        <h4>📡 Observer Pattern</h4>
+                        <p>EventBus centralizado que desacopla completamente UI, Audio y Lógica de juego.</p>
+                    </div>
+                    <div class="pattern-item">
+                        <h4>🏭 Factory Pattern</h4>
+                        <p>EnemyFactory para crear diferentes tipos de amenazas con configuraciones específicas.</p>
+                    </div>
+                    <div class="pattern-item">
+                        <h4>🧩 Component Pattern</h4>
+                        <p>Entidades compuestas por componentes reutilizables: Health, Shield, CPU, Movement.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Controls Section -->
-    <section id="controls" class="features" style="background: #080808;">
-        <div class="section-header">
-            <h2>INTERFAZ DE CONTROL</h2>
-            <p class="text-green">/// MANUAL DE OPERACIONES ///</p>
-        </div>
+    <!-- Educational Impact Section - Para Concurso -->
+    <section id="impact">
+        <div class="section-container">
+            <div class="section-header">
+                <p class="section-label">Impacto Educativo</p>
+                <h2 class="section-title">Aprendizaje a través del Juego</h2>
+                <p class="section-description">
+                    Code Rippier no es solo un juego, es una herramienta educativa diseñada 
+                    para concientizar sobre ciberseguridad de manera efectiva.
+                </p>
+            </div>
 
-        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); text-align: center;">
-            <div class="card">
-                <h3 class="text-green">MOVIMIENTO</h3>
-                <p style="font-size: 2rem; margin: 1rem 0;">⌨️</p>
-                <p><span class="text-orange">W A S D</span><br>o Flechas Direccionales</p>
-            </div>
-            <div class="card">
-                <h3 class="text-green">COMBATE</h3>
-                <p style="font-size: 2rem; margin: 1rem 0;">🖱️</p>
-                <p><span class="text-orange">ESPACIO / CLICK</span><br>Disparo Principal</p>
-            </div>
-            <div class="card">
-                <h3 class="text-green">ARSENAL</h3>
-                <p style="font-size: 2rem; margin: 1rem 0;">⚙️</p>
-                <p><span class="text-orange">1 - 4</span> o Rueda Ratón<br>Cambio de Arma</p>
-            </div>
-            <div class="card">
-                <h3 class="text-green">SISTEMA</h3>
-                <p style="font-size: 2rem; margin: 1rem 0;">🛑</p>
-                <p><span class="text-orange">ESC</span><br>Pausa / Menú</p>
+            <div class="impact-showcase">
+                <div class="impact-card">
+                    <h3>🎯 Objetivos de Aprendizaje</h3>
+                    <p>El jugador aprenderá a:</p>
+                    <ul class="impact-list">
+                        <li>Identificar tipos de malware (Phishing, Ransomware, DDoS)</li>
+                        <li>Comprender cómo funcionan los ataques cibernéticos</li>
+                        <li>Aplicar mejores prácticas de seguridad digital</li>
+                        <li>Reconocer señales de amenazas en tiempo real</li>
+                        <li>Tomar decisiones bajo presión (gestión de recursos)</li>
+                    </ul>
+                </div>
+
+                <div class="impact-card">
+                    <h3>📚 Sistema de Quiz Integrado</h3>
+                    <p>Preguntas contextuales durante el gameplay:</p>
+                    <ul class="impact-list">
+                        <li>Aparecen al derrotar enemigos específicos</li>
+                        <li>Relacionadas con el tipo de amenaza enfrentada</li>
+                        <li>Respuestas correctas otorgan bonificaciones</li>
+                        <li>Refuerzo positivo del conocimiento adquirido</li>
+                        <li>Dificultad adaptativa según progreso</li>
+                    </ul>
+                </div>
+
+                <div class="impact-card">
+                    <h3>💡 Tips de Seguridad en Tiempo Real</h3>
+                    <p>Información contextual que aparece durante el juego:</p>
+                    <ul class="impact-list">
+                        <li>Al encontrar un enemigo Phishing: consejos sobre emails</li>
+                        <li>Al enfrentar Ransomware: importancia de backups</li>
+                        <li>Durante ataques DDoS: explicación de botnets</li>
+                        <li>Terminales interactivas con lore de seguridad</li>
+                    </ul>
+                </div>
+
+                <div class="impact-card">
+                    <h3>🏆 Métricas de Impacto</h3>
+                    <p>Resultados esperados del proyecto:</p>
+                    <ul class="impact-list">
+                        <li>Concientización sobre amenazas digitales comunes</li>
+                        <li>Retención de información mediante gamificación</li>
+                        <li>Aplicabilidad en entornos educativos formales</li>
+                        <li>Código abierto para uso en instituciones</li>
+                        <li>Escalable para añadir nuevas amenazas y contenido</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Evaluation Highlights for Judges -->
-    <section id="evaluation" class="features" style="background: rgba(0, 255, 65, 0.02);">
-        <div class="section-header">
-            <h2>MÉTRICAS DE EVALUACIÓN</h2>
-            <p class="text-green">/// PUNTOS CLAVE PARA EL JURADO ///</p>
-        </div>
+    <!-- Gameplay Section -->
+    <section id="gameplay">
+        <div class="section-container">
+            <div class="section-header">
+                <p class="section-label">Gameplay</p>
+                <h2 class="section-title">Mecánicas y Amenazas</h2>
+                <p class="section-description">
+                    Conoce tus herramientas y a tus enemigos. La información es poder.
+                </p>
+            </div>
 
-        <div class="grid">
-            <div class="card" style="border-color: var(--terminal-green);">
-                <span class="icon">💡</span>
-                <h3>Innovación Mecánica</h3>
-                <p>Sustitución de cooldowns tradicionales por <strong>Gestión de CPU (Flux)</strong>. El jugador comparte una única barra de recursos para Ataque, Defensa y Movilidad, forzando decisiones tácticas constantes.</p>
-            </div>
-            <div class="card" style="border-color: var(--flux-orange);">
-                <span class="icon">🎨</span>
-                <h3>Excelencia Visual & UX</h3>
-                <p>Dirección de arte "Cyberpunk Terminal" consistente. Implementación de <strong>Shaders</strong> (CRT, Glitch), <strong>Sistemas de Partículas</strong> (Explosiones, Trails) y transiciones suaves. UI diegética que sumerge al jugador.</p>
-            </div>
-            <div class="card" style="border-color: var(--glitch-magenta);">
-                <span class="icon">♿</span>
-                <h3>Accesibilidad & UX</h3>
-                <p>Tutorial interactivo con detección de inactividad (Hint System). Feedback visual redundante (Color + Animación) para estados críticos como "Sobrecarga", accesible para daltónicos.</p>
-            </div>
-        </div>
-    </section>
+            <div class="gameplay-showcase">
+                <div class="gameplay-card">
+                    <h3>🎮 Controles</h3>
+                    <ul>
+                        <li><strong>WASD / Flechas:</strong> Movimiento del nodo</li>
+                        <li><strong>Espacio / Click:</strong> Disparo principal</li>
+                        <li><strong>Shift:</strong> Activar escudo / Parry</li>
+                        <li><strong>1-4 / Rueda:</strong> Cambio de arma</li>
+                        <li><strong>ESC:</strong> Menú de pausa</li>
+                    </ul>
+                </div>
 
-    <section id="roadmap" class="features" style="border-top: 1px solid #222;">
-        <div class="section-header">
-            <h2>HOJA DE RUTA</h2>
-            <p class="text-green">/// FUTURAS ACTUALIZACIONES ///</p>
-        </div>
-        
-        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 250px; border-left: 2px solid var(--terminal-green); padding-left: 1.5rem;">
-                <h3 class="text-green">FASE 1: CORE (Completado)</h3>
-                <p style="color: #888; margin-top: 0.5rem;">Implementación de mecánicas base, sistema de Flux, Tutorial accesible y HUD reactivo.</p>
-            </div>
-            <div style="flex: 1; min-width: 250px; border-left: 2px solid var(--flux-orange); padding-left: 1.5rem;">
-                <h3 class="text-orange">FASE 2: EXPANSIÓN (En Progreso)</h3>
-                <p style="color: #888; margin-top: 0.5rem;">Nuevos tipos de enemigos (Spyware invisible), Power-ups de refrigeración y Leaderboards online.</p>
-            </div>
-            <div style="flex: 1; min-width: 250px; border-left: 2px solid #444; padding-left: 1.5rem;">
-                <h3 style="color: #666;">FASE 3: RED GLOBAL</h3>
-                <p style="color: #888; margin-top: 0.5rem;">Modo cooperativo multijugador y editor de niveles para la comunidad.</p>
-            </div>
-        </div>
-    </section>
+                <div class="gameplay-card">
+                    <h3>⚔️ Arsenal Defensivo</h3>
+                    <ul>
+                        <li><strong>Pulse Laser:</strong> Rápido, bajo consumo (5% CPU)</li>
+                        <li><strong>Plasma Cannon:</strong> Alto daño, alto riesgo (25% CPU)</li>
+                        <li><strong>Firewall Burst:</strong> Área de efecto defensiva</li>
+                        <li><strong>Shield Matrix:</strong> Defensa activa con Parry</li>
+                    </ul>
+                </div>
 
-    <section class="stats">
-        <div class="stats-container">
-            <div class="stat-item">
-                <h4>10+</h4>
-                <p>Tipos de Malware</p>
-            </div>
-            <div class="stat-item">
-                <h4>4</h4>
-                <p>Armas Únicas</p>
-            </div>
-            <div class="stat-item">
-                <h4>100%</h4>
-                <p>Código Open Source</p>
-            </div>
-            <div class="stat-item">
-                <h4>∞</h4>
-                <p>Rejugabilidad</p>
+                <div class="gameplay-card threat">
+                    <h3>👾 Base de Amenazas</h3>
+                    <ul>
+                        <li><strong>Phishing Swarm:</strong> Rápidos, atacan en grupo</li>
+                        <li><strong>Ransomware Tank:</strong> Blindaje pesado, lento</li>
+                        <li><strong>DDoS Blaster:</strong> Sobrecarga tu CPU con proyectiles</li>
+                        <li><strong>Malware Stealth:</strong> Aparece sin previo aviso</li>
+                    </ul>
+                </div>
+
+                <div class="gameplay-card threat">
+                    <h3>📚 Módulos Educativos</h3>
+                    <ul>
+                        <li><strong>Quiz System:</strong> Preguntas durante el combate</li>
+                        <li><strong>Security Tips:</strong> Consejos basados en el enemigo</li>
+                        <li><strong>Lore Terminals:</strong> Historia y contexto de seguridad</li>
+                        <li><strong>Vulnerability Patching:</strong> Mini-juegos de parcheo</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Team Section -->
-    <section id="team" class="features" style="background: linear-gradient(180deg, #050505 0%, var(--rippier-dark) 100%); border-top: 1px solid var(--rippier-purple);">
-        <div class="section-header">
-            <h2>OPERADORES DEL SISTEMA</h2>
-            <p style="color: var(--rippier-purple);">/// CODERIPPIER TEAM ///</p>
-        </div>
-
-        <div class="grid">
-            <div class="card" style="border-color: var(--rippier-purple);">
-                <span class="icon" style="color: var(--rippier-purple);">👑</span>
-                <h3 style="color: var(--rippier-purple);">Ricardo Orozco</h3>
-                <p class="text-green" style="font-weight: bold; margin-bottom: 0.5rem;">Team Leader & Lead Developer</p>
-                <p>Arquitectura del sistema, Core Gameplay y dirección técnica.</p>
-            </div>
-            <div class="card" style="border-color: var(--rippier-purple);">
-                <span class="icon" style="color: var(--rippier-purple);">💻</span>
-                <h3 style="color: var(--rippier-purple);">David Gutierrez</h3>
-                <p class="text-green" style="font-weight: bold; margin-bottom: 0.5rem;">Gameplay Programmer & Systems</p>
-                <p>Implementación de mecánicas, sistemas de enemigos y lógica de juego.</p>
-            </div>
-            <div class="card" style="border-color: var(--rippier-purple);">
-                <span class="icon" style="color: var(--rippier-purple);">🎨</span>
-                <h3 style="color: var(--rippier-purple);">Juan Carlos Duran</h3>
-                <p class="text-green" style="font-weight: bold; margin-bottom: 0.5rem;">Art Director & UI/UX</p>
-                <p>Diseño visual, interfaz de usuario y experiencia estética.</p>
-            </div>
-            <div class="card" style="border-color: var(--rippier-purple);">
-                <span class="icon" style="color: var(--rippier-purple);">🗺️</span>
-                <h3 style="color: var(--rippier-purple);">Mateo Barrios</h3>
-                <p class="text-green" style="font-weight: bold; margin-bottom: 0.5rem;">Level Designer & QA</p>
-                <p>Diseño de niveles, balanceo de dificultad y aseguramiento de calidad.</p>
-            </div>
-            <div class="card" style="border-color: var(--rippier-purple);">
-                <span class="icon" style="color: var(--rippier-purple);">📝</span>
-                <h3 style="color: var(--rippier-purple);">Juan Morales</h3>
-                <p class="text-green" style="font-weight: bold; margin-bottom: 0.5rem;">Technical Writer & Documentation</p>
-                <p>Documentación técnica, manuales y narrativa del proyecto.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Technical Data Sheet (Rigorous) -->
-    <section id="specs" class="features" style="background: #020202; border-top: 1px solid #333;">
-        <div class="section-header">
-            <h2>FICHA TÉCNICA</h2>
-            <p class="text-green">/// ESPECIFICACIONES DEL SISTEMA ///</p>
-        </div>
-
-        <div style="max-width: 900px; margin: 0 auto; font-family: 'Share Tech Mono', monospace; border: 1px solid var(--terminal-dim); background: rgba(0, 10, 0, 0.5);">
-            <!-- Header Row -->
-            <div style="background: var(--terminal-dim); color: #000; padding: 0.5rem 1rem; font-weight: bold; display: flex; justify-content: space-between;">
-                <span>SYSTEM_SPECS_V1.1.0</span>
-                <span>STATUS: VERIFIED</span>
+    <section id="team">
+        <div class="section-container">
+            <div class="section-header">
+                <p class="section-label">Equipo de Desarrollo</p>
+                <h2 class="section-title">CodeRippier Team</h2>
+                <p class="section-description">
+                    El equipo detrás del proyecto Code Rippier.
+                </p>
             </div>
 
-            <!-- Data Grid -->
-            <div style="display: grid; grid-template-columns: 30% 70%;">
-                <!-- Row 1 -->
-                <div style="padding: 1rem; border-bottom: 1px solid #333; border-right: 1px solid #333; color: var(--terminal-green);">MOTOR (ENGINE)</div>
-                <div style="padding: 1rem; border-bottom: 1px solid #333; color: #ccc;">Godot Engine 4.5.1 (.NET Edition)</div>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar">👑</div>
+                    <h3>Ricardo Orozco</h3>
+                    <p class="team-role">Líder del Proyecto / Diseñador de Juego</p>
+                    <p class="team-description">
+                        Dirección general del proyecto, diseño de mecánicas y visión creativa del juego.
+                    </p>
+                </div>
 
-                <!-- Row 2 -->
-                <div style="padding: 1rem; border-bottom: 1px solid #333; border-right: 1px solid #333; color: var(--terminal-green);">LENGUAJE</div>
-                <div style="padding: 1rem; border-bottom: 1px solid #333; color: #ccc;">C# (C-Sharp) / .NET 8.0 SDK</div>
+                <div class="team-card">
+                    <div class="team-avatar">💻</div>
+                    <h3>David Gutierrez</h3>
+                    <p class="team-role">Main Developer / Diseñador de Juego</p>
+                    <p class="team-description">
+                        Programador principal. Arquitectura del sistema, implementación de gameplay y sistemas core.
+                    </p>
+                </div>
 
-                <!-- Row 3 -->
-                <div style="padding: 1rem; border-bottom: 1px solid #333; border-right: 1px solid #333; color: var(--terminal-green);">ARQUITECTURA</div>
-                <div style="padding: 1rem; border-bottom: 1px solid #333; color: #ccc;">MVC (Model-View-Controller) + Component-Based Entity System</div>
+                <div class="team-card">
+                    <div class="team-avatar">🎨</div>
+                    <h3>Juan Carlos Duran</h3>
+                    <p class="team-role">Diseñador Gráfico / Artista de Sprites</p>
+                    <p class="team-description">
+                        Diseño visual del juego, creación de sprites de personajes, enemigos y efectos visuales.
+                    </p>
+                </div>
 
-                <!-- Row 4 -->
-                <div style="padding: 1rem; border-bottom: 1px solid #333; border-right: 1px solid #333; color: var(--terminal-green);">PATRONES</div>
-                <div style="padding: 1rem; border-bottom: 1px solid #333; color: #ccc;">Strategy, Observer, Factory, Singleton, Template Method, State</div>
+                <div class="team-card">
+                    <div class="team-avatar">🗺️</div>
+                    <h3>Mateo Barrios</h3>
+                    <p class="team-role">Diseñador de Niveles / Tester</p>
+                    <p class="team-description">
+                        Diseño de niveles, balanceo de dificultad, pruebas de calidad y feedback de gameplay.
+                    </p>
+                </div>
 
-                <!-- Row 5 -->
-                <div style="padding: 1rem; border-bottom: 1px solid #333; border-right: 1px solid #333; color: var(--terminal-green);">PRINCIPIOS</div>
-                <div style="padding: 1rem; border-bottom: 1px solid #333; color: #ccc;">S.O.L.I.D. (Single Resp, Open/Closed, Liskov, Interface Seg, Dependency Inv)</div>
-
-                <!-- Row 6 -->
-                <div style="padding: 1rem; border-bottom: 1px solid #333; border-right: 1px solid #333; color: var(--terminal-green);">CONTROL DE VERSIONES</div>
-                <div style="padding: 1rem; border-bottom: 1px solid #333; color: #ccc;">Git + GitHub (Branching Strategy: Feature Branch Workflow)</div>
-
-                <!-- Row 7 -->
-                <div style="padding: 1rem; border-bottom: 1px solid #333; border-right: 1px solid #333; color: var(--terminal-green);">LICENCIA</div>
-                <div style="padding: 1rem; border-bottom: 1px solid #333; color: #ccc;">MIT License (Open Source)</div>
-
-                <!-- Row 8 -->
-                <div style="padding: 1rem; border-right: 1px solid #333; color: var(--terminal-green);">PLATAFORMAS</div>
-                <div style="padding: 1rem; color: #ccc;">Windows (x64), Linux, WebGL 2.0 (HTML5)</div>
-
-                <!-- Row 9 -->
-                <div style="padding: 1rem; border-top: 1px solid #333; border-right: 1px solid #333; color: var(--rippier-purple);">DESARROLLADOR</div>
-                <div style="padding: 1rem; border-top: 1px solid #333; color: #fff; font-weight: bold;">CodeRippier Team</div>
+                <div class="team-card">
+                    <div class="team-avatar">📝</div>
+                    <h3>Juan Morales</h3>
+                    <p class="team-role">Documentación / Analista de Requerimientos</p>
+                    <p class="team-description">
+                        Documentación técnica, análisis de requisitos, narrativa y contenido educativo del proyecto.
+                    </p>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- Technical Specs -->
+    <section id="specs">
+        <div class="section-container">
+            <div class="section-header">
+                <p class="section-label">Especificaciones</p>
+                <h2 class="section-title">Ficha Técnica</h2>
+            </div>
+
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <span class="spec-label">Motor</span>
+                    <span class="spec-value">Godot Engine 4.x</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Lenguaje</span>
+                    <span class="spec-value">C# / .NET 8.0</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Arquitectura</span>
+                    <span class="spec-value">MVC + Component-Based</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Patrones</span>
+                    <span class="spec-value">Strategy, Observer, Factory</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Principios</span>
+                    <span class="spec-value">S.O.L.I.D.</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Licencia</span>
+                    <span class="spec-value">MIT (Open Source)</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Plataformas</span>
+                    <span class="spec-value">Windows, Linux, Web</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Versión</span>
+                    <span class="spec-value">1.0.0</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download">
+        <div class="section-container">
+            <div class="download-box">
+                <h3>Descarga Code Rippier</h3>
+                <p>
+                    Gratuito, open source y multiplataforma. 
+                    Aprende ciberseguridad mientras te diviertes.
+                </p>
+                <div class="download-buttons">
+                    <a href="https://github.com/Axy-sys/nave/releases" class="platform-btn">
+                        <span>🪟</span>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Descargar para</div>
+                            <div style="font-weight: 600;">Windows</div>
+                        </div>
+                    </a>
+                    <a href="https://github.com/Axy-sys/nave/releases" class="platform-btn">
+                        <span>🐧</span>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Descargar para</div>
+                            <div style="font-weight: 600;">Linux</div>
+                        </div>
+                    </a>
+                    <a href="https://github.com/Axy-sys/nave" class="platform-btn">
+                        <span>🌐</span>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Ver</div>
+                            <div style="font-weight: 600;">Código Fuente</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <footer>
-        <div class="footer-links">
-            <a href="https://github.com/Axy-sys/nave">GitHub</a>
-            <a href="#">Documentación</a>
-            <a href="#">Reportar Bug</a>
-            <a href="#">Licencia MIT</a>
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="#" class="logo">
+                        <span class="logo-prefix">Code</span>Rippier
+                    </a>
+                    <p>
+                        Un juego educativo de ciberseguridad desarrollado por CodeRippier Team. 
+                        Open source bajo licencia MIT.
+                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Proyecto</h4>
+                    <ul>
+                        <li><a href="#about">Acerca de</a></li>
+                        <li><a href="#innovation">Innovación</a></li>
+                        <li><a href="#architecture">Arquitectura</a></li>
+                        <li><a href="#download">Descargar</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Recursos</h4>
+                    <ul>
+                        <li><a href="https://github.com/Axy-sys/nave" target="_blank">GitHub</a></li>
+                        <li><a href="https://github.com/Axy-sys/nave/wiki" target="_blank">Documentación</a></li>
+                        <li><a href="https://github.com/Axy-sys/nave/issues" target="_blank">Reportar Bug</a></li>
+                        <li><a href="https://github.com/Axy-sys/nave/blob/main/LICENSE" target="_blank">Licencia MIT</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Equipo</h4>
+                    <ul>
+                        <li><a href="#team">CodeRippier Team</a></li>
+                        <li><a href="https://github.com/Axy-sys/nave/graphs/contributors" target="_blank">Contribuidores</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2025 CodeRippier Team. Todos los derechos reservados.</p>
+                <p class="mono" style="color: var(--accent-purple);">"We rip the code to build the future."</p>
+            </div>
         </div>
-        <p class="copyright">
-            SYSTEM STATUS: STABLE | © 2025 CodeRippier Team<br>
-            <span style="color: var(--rippier-purple);">"We rip the code to build the future."</span><br>
-            Desarrollado con Godot Engine & C#
-        </p>
     </footer>
 
     <script>
-        // Efecto de escritura simple para la terminal
-        const terminalLines = document.querySelectorAll('.code-line');
-        
-        // Glitch effect randomizer
-        const glitchText = document.querySelector('.glitch-text');
-        setInterval(() => {
-            const r1 = Math.random() * 10;
-            const r2 = Math.random() * 10;
-            glitchText.style.setProperty('--r1', `${r1}px`);
-            glitchText.style.setProperty('--r2', `${r2}px`);
-        }, 2000);
-
-        // Smooth scroll
+        // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             });
+        });
+
+        // Navbar background on scroll
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.style.background = 'rgba(10, 10, 10, 0.98)';
+            } else {
+                nav.style.background = 'rgba(10, 10, 10, 0.9)';
+            }
         });
     </script>
 </body>

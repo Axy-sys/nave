@@ -1,68 +1,138 @@
-# CODE RIPPIER: Cyber Security Defender
+<div align="center">
 
-![Godot 4](https://img.shields.io/badge/Godot-v4.x-478cbf?logo=godot-engine&logoColor=white)
-![C#](https://img.shields.io/badge/Language-C%23-239120?logo=c-sharp&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Active_Development-success)
+# Code Rippier
 
-> **"Defend the Network. Learn the Threats. Survive the Glitch."**
+### Cybersecurity Defense Game
 
-**Code Rippier** es un Arcade Twin-Stick Shooter educativo diseñado para enseñar conceptos fundamentales de ciberseguridad a través de mecánicas de juego frenéticas y visuales estilo cyberpunk.
+[![Godot 4](https://img.shields.io/badge/Godot-4.x-478cbf?style=for-the-badge&logo=godot-engine&logoColor=white)](https://godotengine.org/)
+[![C#](https://img.shields.io/badge/C%23-.NET-239120?style=for-the-badge&logo=dotnet&logoColor=white)](https://docs.microsoft.com/dotnet/csharp/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-v1.0.0-success?style=for-the-badge)]()
+
+**Un simulador táctico de defensa donde gestionas recursos del sistema mientras aprendes sobre amenazas reales de ciberseguridad.**
+
+[🌐 Website](https://axy-sys.github.io/nave) · [📥 Descargar](https://github.com/Axy-sys/nave/releases) · [🐛 Reportar Bug](https://github.com/Axy-sys/nave/issues)
+
+</div>
 
 ---
 
-## 🚀 Características Principales
+## 📖 Acerca del Proyecto
 
-*   **Mecánicas Twin-Stick:** Movimiento fluido en 8 direcciones (WASD) y apuntado preciso con mouse.
-*   **Sistema Educativo Integrado:**
-    *   **ELLIOT AI:** Asistente inteligente que guía al jugador.
-    *   **Enciclopedia de Amenazas:** Base de datos interactiva sobre Malware, Phishing, DDoS, etc.
-    *   **Quiz System:** Desafíos de conocimiento en tiempo real para recuperar salud y obtener mejoras.
-*   **Arquitectura Modular:** Construido sobre Godot 4 con C#, utilizando patrones de diseño sólidos (Component Pattern, Event Bus, Singleton).
+**Code Rippier** es un juego educativo de acción táctica que te pone en el rol de un operador de seguridad defendiendo sistemas críticos contra amenazas cibernéticas como Phishing, Ransomware y ataques DDoS.
+
+### ¿Qué lo hace diferente?
+
+- **Sistema de CPU (Flux):** No hay cooldowns tradicionales. Cada acción consume ciclos de procesamiento. Sobrecarga el sistema y quedarás expuesto.
+- **Parry Táctico:** Activa el escudo en el momento preciso para reflejar proyectiles y ventilar calor instantáneamente.
+- **Aprendizaje Integrado:** Quiz system contextual y tips de seguridad mientras juegas.
+
+---
+
+## ✨ Características
+
+| Característica | Descripción |
+|:---------------|:------------|
+| ⚡ **Gestión de CPU** | Sistema de recursos único que reemplaza cooldowns tradicionales |
+| 🛡️ **Parry Táctico** | Mecánica de alto riesgo/recompensa para defensa activa |
+| 🎓 **Sistema Educativo** | Aprende ciberseguridad mientras juegas |
+| 🔧 **Arquitectura SOLID** | Patrones MVC, Strategy, Observer, Factory |
+| ♿ **Accesibilidad** | Tutorial interactivo y feedback visual redundante |
+| 🌐 **Open Source** | Código abierto bajo licencia MIT |
+
+---
+
+## 🎮 Controles
+
+| Acción | Tecla |
+|:-------|:------|
+| Movimiento | `WASD` / Flechas |
+| Disparo | `Espacio` / Click Izquierdo |
+| Escudo / Parry | `Shift` |
+| Cambiar Arma | `1-4` / Rueda del Mouse |
+| Pausa | `ESC` |
+
+---
+
+## 🛠️ Instalación
+
+### Requisitos
+- [Godot Engine 4.x](https://godotengine.org/) (Versión .NET)
+- [.NET SDK 8.0+](https://dotnet.microsoft.com/download)
+
+### Pasos
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/Axy-sys/nave.git
+
+# Entrar al directorio
+cd nave
+
+# Restaurar dependencias (opcional)
+dotnet restore
+
+# Abrir con Godot Engine 4.x (.NET)
+```
 
 ---
 
 ## 📂 Estructura del Proyecto
 
-El repositorio ha sido organizado para facilitar la navegación y el desarrollo:
-
-*   `Docs/`: Documentación técnica, guías de diseño y manuales.
-    *   [Guía de Inicio Rápido](Docs/QUICKSTART.md)
-    *   [Patrones de Diseño](Docs/DESIGN_PATTERNS.md)
-    *   [Sistema Educativo](Docs/SISTEMA_EDUCATIVO.md)
-*   `Scripts/`: Código fuente C# organizado por dominios (Core, Entities, Systems, UI).
-*   `Scenes/`: Escenas de Godot (.tscn) para niveles, UI y entidades.
-*   `Assets/`: Recursos gráficos y de audio.
-
----
-
-## 👥 Equipo de Desarrollo
-
-| Rol | Miembro |
-| :--- | :--- |
-| **Líder del Proyecto / Game Design** | Ricardo Orozco |
-| **Main Developer / Game Design** | David Gutierrez |
-| **Arte & Sprites** | Juan Carlos Duran |
-| **Level Design / QA** | Mateo Barrios |
-| **Documentación / Analista** | Juan Morales |
+```
+nave/
+├── Assets/          # Sprites, texturas y recursos visuales
+├── Docs/            # Documentación técnica
+├── Scenes/          # Escenas de Godot (.tscn)
+├── Scripts/         # Código fuente C#
+│   ├── Components/  # Sistema de componentes
+│   ├── Core/        # GameManager, EventBus
+│   ├── Education/   # Quiz y tips de seguridad
+│   ├── Entities/    # Player, Enemies, Projectiles
+│   └── UI/          # Interfaces de usuario
+└── website/         # Página web del proyecto
+```
 
 ---
 
-## 🛠️ Instalación y Ejecución
+## 👥 Equipo CodeRippier
 
-1.  Clonar el repositorio:
-    ```bash
-    git clone https://github.com/Axy-sys/nave.git
-    ```
-2.  Abrir el proyecto en **Godot Engine 4.x** (versión .NET).
-3.  Restaurar dependencias de C# (si es necesario):
-    ```bash
-    dotnet restore
-    ```
-4.  Ejecutar desde el editor o compilar.
+<table>
+  <tr>
+    <td align="center"><b>👑 Ricardo Orozco</b><br><sub>Líder del Proyecto<br>Diseñador de Juego</sub></td>
+    <td align="center"><b>💻 David Gutierrez</b><br><sub>Main Developer<br>Diseñador de Juego</sub></td>
+    <td align="center"><b>🎨 Juan Carlos Duran</b><br><sub>Diseñador Gráfico<br>Artista de Sprites</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><b>🗺️ Mateo Barrios</b><br><sub>Diseñador de Niveles<br>Tester</sub></td>
+    <td align="center"><b>📝 Juan Morales</b><br><sub>Documentación<br>Analista de Requerimientos</sub></td>
+    <td align="center"></td>
+  </tr>
+</table>
+
+---
+
+## 📚 Documentación
+
+- [📖 Guía de Inicio Rápido](Docs/QUICKSTART.md)
+- [🏗️ Patrones de Diseño](Docs/DESIGN_PATTERNS.md)
+- [🎓 Sistema Educativo](Docs/SISTEMA_EDUCATIVO.md)
+- [🎨 Mejoras UX/UI](Docs/MEJORAS_UX_UI.md)
+- [⌨️ Configuración de Inputs](Docs/INPUT_SETUP.md)
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la licencia MIT. Ver archivo `LICENSE` para más detalles.
+Este proyecto está bajo la licencia **MIT**. Ver [LICENSE](LICENSE) para más detalles.
+
+---
+
+<div align="center">
+
+**CodeRippier Team** © 2025
+
+*"We rip the code to build the future."*
+
+</div>
 
