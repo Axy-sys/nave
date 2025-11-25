@@ -5,12 +5,14 @@ using CyberSecurityGame.Systems;
 using CyberSecurityGame.Education;
 using CyberSecurityGame.Core.Events;
 using CyberSecurityGame.Core.Interfaces;
+using CyberSecurityGame.UI;
 
 namespace CyberSecurityGame
 {
     /// <summary>
     /// Escena principal del juego
     /// Coordina todos los sistemas y la inicialización
+    /// Incluye secuencia de intro cinematográfica
     /// </summary>
     public partial class MainScene : Node2D
     {
@@ -20,32 +22,55 @@ namespace CyberSecurityGame
         private VulnerabilitySystem _vulnerabilitySystem;
         private QuizSystem _quizSystem;
         private SecurityTipsSystem _tipsSystem;
+        private MissionIntroSystem _missionIntro;
+        private GameJuiceSystem _juiceSystem;
         private GameHUD _hud;
         private QuizView _quizView;
+        private ScreenEffects _screenEffects;
         private Entities.Player _player;
+        
+        private bool _introCompleted = false;
+        private int _currentLevel = 1;
 
         public override void _Ready()
         {
             GD.Print("=== CyberSecurity Defender - Iniciando ===");
-            InitializeSystems();
+            
+            // Fase 1: Setup básico (sistemas internos)
+            InitializeCoreSystems();
+            
+            // Fase 2: Setup visual (fondo y escena)
             SetupScene();
+            
+            // Fase 3: Mostrar intro cinematográfica
+            StartMissionIntro();
         }
 
-        private void InitializeSystems()
+        private void InitializeCoreSystems()
         {
+            // High Score System (singleton global)
+            if (HighScoreSystem.Instance == null)
+            {
+                var highScoreSystem = new HighScoreSystem();
+                highScoreSystem.Name = "HighScoreSystem";
+                GetTree().Root.AddChild(highScoreSystem);
+            }
+
             // Game Manager
             _gameManager = new GameManager();
             _gameManager.Name = "GameManager";
             AddChild(_gameManager);
 
-            // Wave System
+            // Wave System (no inicia automáticamente ahora)
             _waveSystem = new WaveSystem();
             _waveSystem.Name = "WaveSystem";
+            _waveSystem.ProcessMode = ProcessModeEnum.Pausable;
             AddChild(_waveSystem);
 
             // Power-Up System
             _powerUpSystem = new PowerUpSystem();
             _powerUpSystem.Name = "PowerUpSystem";
+            _powerUpSystem.ProcessMode = ProcessModeEnum.Pausable;
             AddChild(_powerUpSystem);
 
             // Vulnerability System
@@ -68,7 +93,89 @@ namespace CyberSecurityGame
             dialogueSystem.Name = "DialogueSystem";
             AddChild(dialogueSystem);
 
-            // UI
+            // Game Juice System (feedback visual satisfactorio)
+            _juiceSystem = new GameJuiceSystem();
+            _juiceSystem.Name = "GameJuiceSystem";
+            AddChild(_juiceSystem);
+
+            // Conectar eventos
+            GameEventBus.Instance.OnVulnerabilityDetected += OnVulnerabilityDetected;
+            GameEventBus.Instance.OnQuestionAnswered += OnQuestionAnswered;
+            GameEventBus.Instance.OnNewEnemyEncountered += OnNewEnemyEncountered;
+            GameEventBus.Instance.OnWaveAnnounced += OnWaveAnnounced;
+
+            GD.Print("✓ Sistemas core inicializados");
+        }
+
+        private void SetupScene()
+        {
+            // ═══════════════════════════════════════════════════════════
+            // FASE 1: FONDO (primera cosa que aparece)
+            // ═══════════════════════════════════════════════════════════
+            var bgScene = GD.Load<PackedScene>("res://Scenes/AnimatedBackground.tscn");
+            if (bgScene != null)
+            {
+                GetNodeOrNull("Background")?.QueueFree();
+                
+                var parallax = new Parallax2D();
+                parallax.Name = "ParallaxSystem";
+                parallax.ScrollScale = new Vector2(0.5f, 0.5f);
+                parallax.RepeatSize = new Vector2(2400, 1600);
+                parallax.Autoscroll = new Vector2(0, 50);
+                
+                var background = bgScene.Instantiate() as Node2D;
+                if (background != null)
+                {
+                    background.Name = "AnimatedBackground";
+                    background.Scale = new Vector2(2, 2);
+                    parallax.AddChild(background);
+                }
+                
+                AddChild(parallax);
+                MoveChild(parallax, 0);
+                GD.Print("✓ Fondo cargado");
+            }
+
+            // ═══════════════════════════════════════════════════════════
+            // FASE 2: JUGADOR - Buscar existente O crear nuevo
+            // (Main.tscn ya puede tener Player instanciado)
+            // ═══════════════════════════════════════════════════════════
+            _player = GetNodeOrNull<Entities.Player>("Player");
+            
+            if (_player == null)
+            {
+                // Solo crear si no existe en la escena
+                var playerScene = GD.Load<PackedScene>("res://Scenes/Player.tscn");
+                if (playerScene != null)
+                {
+                    _player = playerScene.Instantiate<Entities.Player>();
+                    _player.Name = "Player";
+                    AddChild(_player);
+                    GD.Print("✓ Jugador creado (nuevo)");
+                }
+                else
+                {
+                    GD.PrintErr("✗ No se pudo cargar la escena del jugador");
+                }
+            }
+            else
+            {
+                GD.Print("✓ Jugador encontrado (existente en escena)");
+            }
+            
+            // Configurar ProcessMode en cualquier caso
+            if (_player != null)
+            {
+                _player.ProcessMode = ProcessModeEnum.Pausable;
+            }
+
+            // ═══════════════════════════════════════════════════════════
+            // FASE 3: EFECTOS Y HUD
+            // ═══════════════════════════════════════════════════════════
+            _screenEffects = new ScreenEffects();
+            _screenEffects.Name = "ScreenEffects";
+            AddChild(_screenEffects);
+
             _hud = new GameHUD();
             _hud.Name = "GameHUD";
             AddChild(_hud);
@@ -77,24 +184,48 @@ namespace CyberSecurityGame
             _quizView.Name = "QuizView";
             AddChild(_quizView);
 
-            // Dialogue View
-            var dialogueView = new DialogueView();
-            dialogueView.Name = "DialogueView";
-            AddChild(dialogueView);
+            // NOTA: DialogueView está DESACTIVADO
+            // Los diálogos ahora se manejan exclusivamente por MissionIntroSystem
+            // para evitar superposición de UI y slow-motion no deseado
 
-            // Conectar eventos para la mecánica de Quiz
-            GameEventBus.Instance.OnVulnerabilityDetected += OnVulnerabilityDetected;
-            GameEventBus.Instance.OnQuestionAnswered += OnQuestionAnswered;
-            GameEventBus.Instance.OnNewEnemyEncountered += OnNewEnemyEncountered;
-            GameEventBus.Instance.OnWaveAnnounced += OnWaveAnnounced;
+            GD.Print("✓ UI y efectos cargados");
+        }
 
-            GD.Print("✓ Sistemas inicializados");
+        private void StartMissionIntro()
+        {
+            // ═══════════════════════════════════════════════════════════
+            // FASE 4: INTRO CINEMATOGRÁFICA
+            // ═══════════════════════════════════════════════════════════
+            _missionIntro = new MissionIntroSystem();
+            _missionIntro.Name = "MissionIntro";
+            AddChild(_missionIntro);
+
+            _missionIntro.IntroCompleted += OnIntroCompleted;
+
+            // Iniciar la intro del nivel 1, oleada 1
+            _missionIntro.StartIntro(_currentLevel, 1, () => {
+                GD.Print("✓ Intro completada - Iniciando juego");
+            });
+        }
+
+        private void OnIntroCompleted()
+        {
+            _introCompleted = true;
+            
+            // Ahora sí iniciamos el juego
+            _gameManager.StartGame();
+            
+            GD.Print(">>> MISIÓN INICIADA <<<");
         }
 
         private void OnWaveAnnounced(int wave, string title, string desc)
         {
-            // Mostrar la narrativa al inicio de la oleada
-            _quizView.ShowInfo($"OLEADA {wave}: {title}", desc, "PREPÁRATE PARA LA DEFENSA");
+            // Si es oleada > 1, mostrar briefing rápido
+            if (wave > 1 && _missionIntro != null)
+            {
+                // Para oleadas posteriores, solo mostramos el panel de info
+                _quizView.ShowInfo($"WAVE {wave}: {title}", desc, "PREPARE FOR DEFENSE");
+            }
         }
 
         private void OnNewEnemyEncountered(string name, string desc, string weakness)
@@ -106,14 +237,12 @@ namespace CyberSecurityGame
         {
             if (vulnerability.Contains("Assessment"))
             {
-                // Extraer el nivel del string "Level X Assessment"
                 int level = 1;
                 if (int.TryParse(vulnerability.Split(' ')[1], out int parsedLevel))
                 {
                     level = parsedLevel;
                 }
 
-                // Pausar y mostrar pregunta de evaluación del nivel correspondiente
                 var question = _quizSystem.GetQuestionForLevel(level);
                 _quizView.ShowQuestion(question);
             }
@@ -128,19 +257,15 @@ namespace CyberSecurityGame
         {
             if (correct && _player != null)
             {
-                // Recompensa: Restaurar integridad
                 _player.Heal(25f);
-                GameEventBus.Instance.EmitSecurityTipShown("¡Brecha parcheada! Integridad restaurada.");
+                GameEventBus.Instance.EmitSecurityTipShown("Breach patched! Integrity restored.");
             }
             else
             {
-                // Penalización: Daño o mensaje
-                GameEventBus.Instance.EmitSecurityTipShown("¡Fallo crítico! La brecha persiste.");
+                GameEventBus.Instance.EmitSecurityTipShown("Critical failure! Breach persists.");
                 if (_player != null) _player.TakeDamage(10, DamageType.Physical);
             }
 
-            // Si estamos en la fase final del nivel (WaveSystem ya emitió Level 1 Assessment)
-            // Verificamos si debemos completar el nivel
             if (_waveSystem.GetCurrentWave() >= 3 && !_waveSystem.IsWaveActive())
             {
                 _waveSystem.CompleteLevel();
@@ -153,71 +278,26 @@ namespace CyberSecurityGame
             GameEventBus.Instance.OnQuestionAnswered -= OnQuestionAnswered;
             GameEventBus.Instance.OnNewEnemyEncountered -= OnNewEnemyEncountered;
             GameEventBus.Instance.OnWaveAnnounced -= OnWaveAnnounced;
-        }
-
-        private void SetupScene()
-        {
-            // Configurar fondo animado con Parallax2D (Godot 4.3+)
-            var bgScene = GD.Load<PackedScene>("res://Scenes/AnimatedBackground.tscn");
-            if (bgScene != null)
+            
+            if (_missionIntro != null)
             {
-                // Eliminar fondo estático si existe
-                GetNodeOrNull("Background")?.QueueFree();
-                
-                var parallax = new Parallax2D();
-                parallax.Name = "ParallaxSystem";
-                
-                // Configurar movimiento relativo
-                parallax.ScrollScale = new Vector2(0.5f, 0.5f);
-                
-                // Configurar repetición infinita con tamaño aumentado
-                // Escalamos el fondo x2 para cubrir el viewport del zoom 0.5
-                parallax.RepeatSize = new Vector2(2400, 1600);
-                parallax.Autoscroll = new Vector2(0, 50); 
-                
-                var background = bgScene.Instantiate() as Node2D;
-                if (background != null)
-                {
-                    background.Name = "AnimatedBackground";
-                    background.Scale = new Vector2(2, 2); // Escalar x2
-                    parallax.AddChild(background);
-                }
-                
-                // Añadir como primer hijo
-                AddChild(parallax);
-                MoveChild(parallax, 0);
-                
-                GD.Print("✓ Fondo animado con Parallax2D (Escalado) cargado");
+                _missionIntro.IntroCompleted -= OnIntroCompleted;
             }
-
-            // Instanciar el jugador
-            var playerScene = GD.Load<PackedScene>("res://Scenes/Player.tscn");
-            if (playerScene != null)
-            {
-                _player = playerScene.Instantiate<Entities.Player>();
-                _player.Name = "Player";
-                AddChild(_player);
-                GD.Print("✓ Jugador creado");
-            }
-            else
-            {
-                GD.PrintErr("✗ No se pudo cargar la escena del jugador");
-            }
-
-            // Iniciar el juego
-            _gameManager.StartGame();
         }
 
         public override void _Input(InputEvent @event)
         {
+            // No procesar input durante la intro
+            if (!_introCompleted) return;
+
             // Manejo de Game Over
             if (_gameManager.CurrentState == GameState.GameOver)
             {
-                if (@event.IsActionPressed("ui_cancel")) // ESC -> Menu
+                if (@event.IsActionPressed("ui_cancel"))
                 {
                     GetTree().ChangeSceneToFile("res://Scenes/MainMenu.tscn");
                 }
-                else if (@event is InputEventKey keyEvent && keyEvent.Pressed && keyEvent.Keycode == Key.R) // R -> Restart
+                else if (@event is InputEventKey keyEvent && keyEvent.Pressed && keyEvent.Keycode == Key.R)
                 {
                     GetTree().ReloadCurrentScene();
                 }
@@ -230,12 +310,12 @@ namespace CyberSecurityGame
                 if (_gameManager.CurrentState == GameState.Playing)
                 {
                     _gameManager.PauseGame();
-                    GD.Print("⏸ Juego pausado");
+                    GD.Print("⏸ Game Paused");
                 }
                 else if (_gameManager.CurrentState == GameState.Paused)
                 {
                     _gameManager.ResumeGame();
-                    GD.Print("▶ Juego reanudado");
+                    GD.Print("▶ Game Resumed");
                 }
             }
 

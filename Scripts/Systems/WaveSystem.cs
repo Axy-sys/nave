@@ -151,49 +151,21 @@ namespace CyberSecurityGame.Systems
 			GD.Print("📂 Lore Terminal Spawned!");
 		}
 
+		/// <summary>
+		/// DESACTIVADO: Los diálogos ahora se manejan en MissionIntroSystem
+		/// para evitar superposición de UI y slow-motion no deseado
+		/// </summary>
 		private void TriggerWaveDialogue(int level, int wave)
 		{
-			if (DialogueSystem.Instance == null) return;
-
-			if (level == 1)
-			{
-				if (wave == 1)
-				{
-					DialogueSystem.Instance.ShowSequence(new List<DialogueLine> {
-						new DialogueLine("ELLIOT", "Hola, amigo. ¿Estás ahí? El sistema cree que es seguro.", 3f),
-						new DialogueLine("ELLIOT", "Solo es una ilusión de control. Vamos a romperla.", 3f),
-						new DialogueLine("MR. ROBOT", "¡Despierta! Ya vienen. No dejes que esos scripts te toquen.", 3f)
-					});
-				}
-				else if (wave == 3)
-				{
-					DialogueSystem.Instance.ShowDialogue("MR. ROBOT", "Están coordinando el ataque. Quieren silenciarnos. ¡Haz ruido!", 3f);
-				}
-			}
-			else if (level == 2)
-			{
-				if (wave == 1)
-				{
-					DialogueSystem.Instance.ShowSequence(new List<DialogueLine> {
-						new DialogueLine("ELLIOT", "Estamos en la Deep Web. Capas de cebolla ocultando la podredumbre.", 3f),
-						new DialogueLine("MR. ROBOT", "Aquí no hay leyes. Solo fuerza bruta. Prepárate.", 3f)
-					});
-				}
-				else if (wave == 3)
-				{
-					DialogueSystem.Instance.ShowDialogue("ELLIOT", "Es un Honeypot del FBI. Sabían que vendríamos. Tenemos que salir de aquí.", 3f);
-				}
-			}
-			else if (level == 3)
-			{
-				if (wave == 1)
-				{
-					DialogueSystem.Instance.ShowSequence(new List<DialogueLine> {
-						new DialogueLine("ELLIOT", "El núcleo de E-Corp. Aquí guardan sus deudas. Sus mentiras.", 3f),
-						new DialogueLine("MR. ROBOT", "Bórralo todo. Que no quede nada. Inicia la Fase 2.", 4f)
-					});
-				}
-			}
+			// El sistema MissionIntroSystem ahora maneja toda la narrativa
+			// de forma integrada con el briefing de misión.
+			// No llamamos a DialogueSystem.Instance aquí para evitar:
+			// 1. Paneles superpuestos
+			// 2. Slow-motion (Engine.TimeScale = 0.1) durante gameplay
+			// 3. Confusión de UX con múltiples diálogos
+			
+			// Solo log para debug
+			GD.Print($"[WaveSystem] Wave {wave} de Level {level} - Diálogo manejado por MissionIntro");
 		}
 
 		private void SpawnObstacles(int count)
@@ -247,7 +219,23 @@ namespace CyberSecurityGame.Systems
 					_ => ("ERROR FATAL", "Kernel Panic.")
 				};
 			}
-		}		private void SpawnWaveEnemies(int count)
+		}		// ═══════════════════════════════════════════════════════════════════
+		// FORMACIONES ESTILO SPACE INVADERS / GALAGA
+		// ═══════════════════════════════════════════════════════════════════
+		
+		private enum FormationType
+		{
+			Line,           // Línea horizontal
+			VShape,         // Formación en V
+			Diamond,        // Diamante
+			Wave,           // Onda sinusoidal
+			Grid,           // Cuadrícula clásica Space Invaders
+			Pincer,         // Pinza desde los lados
+			Cascade,        // Cascada escalonada
+			Spiral          // Entrada en espiral
+		}
+
+		private void SpawnWaveEnemies(int count)
 		{
 			var random = new System.Random();
 			
@@ -257,10 +245,230 @@ namespace CyberSecurityGame.Systems
 			// Verificar si hay enemigos nuevos para mostrar información
 			CheckForNewEnemies(allowedTypes);
 
-			for (int i = 0; i < count; i++)
+			// Seleccionar formación según nivel y oleada
+			var formation = SelectFormation();
+			var positions = GenerateFormationPositions(formation, count);
+			
+			GD.Print($"📐 Formación: {formation} con {count} enemigos");
+
+			// Spawn con delay visual para entrada dramática
+			for (int i = 0; i < positions.Count; i++)
 			{
-				var timer = GetTree().CreateTimer(i * 0.8f); // Spawn escalonado
-				timer.Timeout += () => SpawnSingleEnemy(random, allowedTypes);
+				int index = i;
+				var timer = GetTree().CreateTimer(GetFormationDelay(formation, i));
+				timer.Timeout += () => SpawnEnemyAtFormation(random, allowedTypes, positions[index], formation, index);
+			}
+		}
+
+		private FormationType SelectFormation()
+		{
+			// Formaciones más complejas en oleadas/niveles avanzados
+			var formations = new List<FormationType>();
+			
+			if (_currentLevel == 1)
+			{
+				formations.Add(FormationType.Line);
+				if (_currentWave >= 2) formations.Add(FormationType.VShape);
+				if (_currentWave >= 3) formations.Add(FormationType.Wave);
+			}
+			else if (_currentLevel == 2)
+			{
+				formations.Add(FormationType.VShape);
+				formations.Add(FormationType.Grid);
+				if (_currentWave >= 2) formations.Add(FormationType.Diamond);
+				if (_currentWave >= 3) formations.Add(FormationType.Pincer);
+			}
+			else // Nivel 3
+			{
+				formations.Add(FormationType.Grid);
+				formations.Add(FormationType.Pincer);
+				formations.Add(FormationType.Cascade);
+				if (_currentWave >= 2) formations.Add(FormationType.Spiral);
+				if (_currentWave >= 3) formations.Add(FormationType.Diamond);
+			}
+
+			var random = new System.Random();
+			return formations[random.Next(formations.Count)];
+		}
+
+		private List<Vector2> GenerateFormationPositions(FormationType formation, int count)
+		{
+			var viewport = GetViewport().GetVisibleRect().Size;
+			float centerX = viewport.X / 2;
+			float spacing = 80f;
+			var positions = new List<Vector2>();
+
+			switch (formation)
+			{
+				case FormationType.Line:
+					// Línea horizontal entrando desde arriba
+					float lineStartX = centerX - (count - 1) * spacing / 2;
+					for (int i = 0; i < count; i++)
+					{
+						positions.Add(new Vector2(lineStartX + i * spacing, -50));
+					}
+					break;
+
+				case FormationType.VShape:
+					// Formación en V (punta hacia abajo)
+					for (int i = 0; i < count; i++)
+					{
+						int side = i % 2 == 0 ? -1 : 1;
+						int row = i / 2;
+						float x = centerX + side * row * spacing / 1.5f;
+						float y = -50 - row * 40;
+						positions.Add(new Vector2(x, y));
+					}
+					break;
+
+				case FormationType.Diamond:
+					// Formación diamante
+					int halfCount = count / 2;
+					for (int i = 0; i < count; i++)
+					{
+						int row = i < halfCount ? i : count - i - 1;
+						float x = centerX + (i < halfCount ? (i - halfCount / 2) : ((count - i - 1) - halfCount / 2)) * spacing;
+						float y = -50 - Mathf.Abs(i - count / 2) * 50;
+						positions.Add(new Vector2(x, y));
+					}
+					break;
+
+				case FormationType.Wave:
+					// Onda sinusoidal
+					for (int i = 0; i < count; i++)
+					{
+						float x = 100 + i * (viewport.X - 200) / count;
+						float y = -50 - Mathf.Sin(i * 0.8f) * 60;
+						positions.Add(new Vector2(x, y));
+					}
+					break;
+
+				case FormationType.Grid:
+					// Cuadrícula clásica Space Invaders
+					int cols = Mathf.Min(count, 6);
+					int rows = Mathf.CeilToInt((float)count / cols);
+					float gridStartX = centerX - (cols - 1) * spacing / 2;
+					for (int i = 0; i < count; i++)
+					{
+						int col = i % cols;
+						int row = i / cols;
+						positions.Add(new Vector2(gridStartX + col * spacing, -50 - row * 60));
+					}
+					break;
+
+				case FormationType.Pincer:
+					// Pinza desde ambos lados
+					int leftCount = count / 2;
+					int rightCount = count - leftCount;
+					// Lado izquierdo
+					for (int i = 0; i < leftCount; i++)
+					{
+						positions.Add(new Vector2(-50, 100 + i * 70));
+					}
+					// Lado derecho
+					for (int i = 0; i < rightCount; i++)
+					{
+						positions.Add(new Vector2(viewport.X + 50, 100 + i * 70));
+					}
+					break;
+
+				case FormationType.Cascade:
+					// Cascada escalonada
+					for (int i = 0; i < count; i++)
+					{
+						float x = 100 + (i % 3) * (viewport.X - 200) / 3;
+						float y = -50 - (i / 3) * 80 - (i % 3) * 30;
+						positions.Add(new Vector2(x, y));
+					}
+					break;
+
+				case FormationType.Spiral:
+					// Entrada en espiral
+					for (int i = 0; i < count; i++)
+					{
+						float angle = i * 0.5f;
+						float radius = 50 + i * 20;
+						float x = centerX + Mathf.Cos(angle) * radius;
+						float y = -100 - Mathf.Sin(angle) * radius / 3;
+						positions.Add(new Vector2(x, y));
+					}
+					break;
+
+				default:
+					// Fallback: posiciones aleatorias
+					for (int i = 0; i < count; i++)
+					{
+						positions.Add(GetRandomSpawnPosition());
+					}
+					break;
+			}
+
+			return positions;
+		}
+
+		private float GetFormationDelay(FormationType formation, int index)
+		{
+			// Delays diferentes según el tipo de formación para entrada dramática
+			return formation switch
+			{
+				FormationType.Line => index * 0.1f,
+				FormationType.VShape => index * 0.15f,
+				FormationType.Diamond => index * 0.12f,
+				FormationType.Wave => index * 0.08f,
+				FormationType.Grid => (index % 6) * 0.1f + (index / 6) * 0.3f,
+				FormationType.Pincer => index * 0.2f,
+				FormationType.Cascade => index * 0.25f,
+				FormationType.Spiral => index * 0.18f,
+				_ => index * 0.8f
+			};
+		}
+
+		private void SpawnEnemyAtFormation(System.Random random, System.Array enemyTypes, Vector2 startPos, FormationType formation, int index)
+		{
+			var type = (EnemyType)enemyTypes.GetValue(random.Next(enemyTypes.Length));
+			
+			var enemy = EnemyFactory.CreateEnemy(type, startPos);
+			if (enemy != null)
+			{
+				GetTree().Root.GetNode("Main").AddChild(enemy);
+				enemy.TreeExiting += () => OnEnemyDefeated(type);
+				
+				// Animar entrada según formación
+				AnimateFormationEntry(enemy, formation, startPos, index);
+			}
+		}
+
+		private void AnimateFormationEntry(Node2D enemy, FormationType formation, Vector2 startPos, int index)
+		{
+			var viewport = GetViewport().GetVisibleRect().Size;
+			float targetY = 80 + (index / 6) * 60; // Fila objetivo
+			float centerX = viewport.X / 2;
+
+			var tween = enemy.CreateTween();
+			tween.SetTrans(Tween.TransitionType.Cubic);
+			tween.SetEase(Tween.EaseType.Out);
+
+			switch (formation)
+			{
+				case FormationType.Line:
+				case FormationType.VShape:
+				case FormationType.Diamond:
+				case FormationType.Wave:
+				case FormationType.Grid:
+				case FormationType.Cascade:
+				case FormationType.Spiral:
+					// Entrada vertical suave
+					var targetPos = new Vector2(startPos.X, targetY);
+					targetPos.X = Mathf.Clamp(targetPos.X, 60, viewport.X - 60);
+					tween.TweenProperty(enemy, "position", targetPos, 1.0f + index * 0.05f);
+					break;
+
+				case FormationType.Pincer:
+					// Entrada horizontal desde los lados
+					float targetX = startPos.X < 0 ? 150 + index * 40 : viewport.X - 150 - (index - 5) * 40;
+					targetX = Mathf.Clamp(targetX, 60, viewport.X - 60);
+					tween.TweenProperty(enemy, "position", new Vector2(targetX, startPos.Y), 1.2f);
+					break;
 			}
 		}
 

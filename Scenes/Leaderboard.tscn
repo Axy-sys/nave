@@ -1,0 +1,94 @@
+[gd_scene load_steps=4 format=3 uid="uid://nggs43ms5627"]
+
+[ext_resource type="Script" path="res://Scripts/UI/Leaderboard.cs" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.02, 0.02, 0.05, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0, 0.15, 0.1, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 1, 0.5, 0.8)
+
+[node name="Leaderboard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="ContentContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="ContentContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+text = "╔════════════════════════════════════════╗
+║         HALL OF DEFENDERS              ║
+╚════════════════════════════════════════╝"
+
+[node name="ScoresLabel" type="Label" parent="ContentContainer"]
+custom_minimum_size = Vector2(750, 400)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+text = "> Cargando récords..."
+
+[node name="ButtonsContainer" type="HBoxContainer" parent="ContentContainer"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 30
+
+[node name="BackButton" type="Button" parent="ContentContainer/ButtonsContainer"]
+custom_minimum_size = Vector2(200, 45)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "[ESC] VOLVER"
+
+[node name="ClearButton" type="Button" parent="ContentContainer/ButtonsContainer"]
+custom_minimum_size = Vector2(200, 45)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "[C] BORRAR RÉCORDS"
+
+[node name="ConfirmDialog" type="ConfirmationDialog" parent="."]
+title = "CONFIRMAR BORRADO"
+initial_position = 2
+size = Vector2i(400, 150)
+dialog_text = "¿Seguro que deseas borrar todos los récords?
+Esta acción no se puede deshacer."
+ok_button_text = "BORRAR"
+cancel_button_text = "CANCELAR"

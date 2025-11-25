@@ -28,6 +28,7 @@ namespace CyberSecurityGame.Core.Events
 		public event Action OnPlayerDied;
 		public event Action<int> OnScoreChanged;
 		public event Action<string, int> OnEnemyDefeated;
+		public event Action<string, float> OnPlayerDamagedByEnemy; // enemyType, damage
 		
 		// Eventos de ciberseguridad
 		public event Action<string> OnQuestionPresented;
@@ -72,6 +73,11 @@ namespace CyberSecurityGame.Core.Events
 		public void EmitEnemyDefeated(string enemyType, int points)
 		{
 			OnEnemyDefeated?.Invoke(enemyType, points);
+		}
+
+		public void EmitPlayerDamagedByEnemy(string enemyType, float damage)
+		{
+			OnPlayerDamagedByEnemy?.Invoke(enemyType, damage);
 		}
 
 		public void EmitQuestionPresented(string question)

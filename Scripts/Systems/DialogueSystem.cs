@@ -4,6 +4,13 @@ using System.Collections.Generic;
 
 namespace CyberSecurityGame.Systems
 {
+    /// <summary>
+    /// NOTA: Este sistema ha sido parcialmente reemplazado por MissionIntroSystem
+    /// para los diálogos de inicio de misión.
+    /// 
+    /// Se mantiene activo para casos específicos pero SIN slow-motion
+    /// para no interferir con el gameplay.
+    /// </summary>
     public partial class DialogueSystem : Node
     {
         private static DialogueSystem _instance;
@@ -14,6 +21,9 @@ namespace CyberSecurityGame.Systems
 
         private Queue<DialogueLine> _dialogueQueue = new Queue<DialogueLine>();
         private bool _isDialogueActive = false;
+        
+        // DESACTIVAR slow-motion para no interferir con gameplay
+        private bool _enableSlowMotion = false;
 
         public override void _Ready()
         {
@@ -49,7 +59,14 @@ namespace CyberSecurityGame.Systems
         private void StartDialogueSequence()
         {
             _isDialogueActive = true;
-            Engine.TimeScale = 0.1f; // Matrix/Hacker slow motion effect
+            
+            // NOTA: Slow-motion desactivado para evitar problemas de UX
+            // El MissionIntroSystem maneja la pausa del juego de forma más controlada
+            if (_enableSlowMotion)
+            {
+                Engine.TimeScale = 0.3f; // Menos agresivo que 0.1
+            }
+            
             ShowNextLine();
         }
 
@@ -65,14 +82,7 @@ namespace CyberSecurityGame.Systems
             
             EmitSignal(SignalName.DialogueStarted, line.Speaker, line.Text);
 
-            // Wait for duration (adjusted for TimeScale)
-            // Since TimeScale is 0.1, a 3s timer will take 30s real time if we use SceneTreeTimer without ignoring time scale.
-            // We must use ProcessAlways or ignore time scale?
-            // GetTree().CreateTimer(duration, false) -> false means respect time scale.
-            // We want the dialogue to last 3 seconds REAL time.
-            // So we should use CreateTimer(duration, true, false, true) -> ignore_time_scale = true.
-            // In Godot 4 C#: CreateTimer(timeSec, processAlways, processInPhysics, ignoreTimeScale)
-            
+            // Timer que ignora el time scale para duración consistente
             await ToSignal(GetTree().CreateTimer(line.Duration, true, false, true), "timeout");
 
             ShowNextLine();
@@ -81,8 +91,33 @@ namespace CyberSecurityGame.Systems
         private void EndDialogueSequence()
         {
             _isDialogueActive = false;
-            Engine.TimeScale = 1.0f; // Restore normal speed
+            
+            if (_enableSlowMotion)
+            {
+                Engine.TimeScale = 1.0f;
+            }
+            
             EmitSignal(SignalName.DialogueEnded);
+        }
+        
+        /// <summary>
+        /// Limpiar cola de diálogos pendientes
+        /// </summary>
+        public void ClearQueue()
+        {
+            _dialogueQueue.Clear();
+            if (_isDialogueActive)
+            {
+                EndDialogueSequence();
+            }
+        }
+        
+        /// <summary>
+        /// Habilitar/deshabilitar slow-motion (desactivado por defecto)
+        /// </summary>
+        public void SetSlowMotionEnabled(bool enabled)
+        {
+            _enableSlowMotion = enabled;
         }
     }
 
