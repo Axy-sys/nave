@@ -378,9 +378,10 @@ namespace CyberSecurityGame.Systems
                 // Typing effect simulado con fade
                 _elliotText.Modulate = new Color(1, 1, 1, 0);
                 var typeTween = CreateTween();
-                typeTween.TweenProperty(_elliotText, "modulate:a", 1.0f, 0.2f);
+                typeTween.TweenProperty(_elliotText, "modulate:a", 1.0f, 0.3f);
                 
-                await ToSignal(GetTree().CreateTimer(2.5f, true, false, true), "timeout");
+                // MEJORA UX: Más tiempo para leer cada línea (3.5s en vez de 2.5s)
+                await ToSignal(GetTree().CreateTimer(3.5f, true, false, true), "timeout");
             }
 
             // Fade out Elliot
@@ -437,36 +438,42 @@ namespace CyberSecurityGame.Systems
         // ═══════════════════════════════════════════════════════════
         private (string speaker, List<string> lines) GetElliotDialogue(int level, int wave)
         {
+            // ═══════════════════════════════════════════════════════════
+            // DIÁLOGO MEJORADO UX:
+            // - Cada línea aparece con tiempo suficiente para leer
+            // - Orden lógico: Saludo → Situación → Instrucción
+            // - Mensajes cortos y claros
+            // ═══════════════════════════════════════════════════════════
+            
             if (level == 1 && wave == 1)
             {
                 return ("ELLIOT", new List<string> {
-                    "Hey... are you there?",
-                    "The system thinks it's secure. It's not.",
-                    "They're watching. Let's give them something to see."
+                    "Bienvenido, operador.",                          // 1. Saludo
+                    "Amenazas detectadas en el sistema.",             // 2. Situación
+                    "Usa WASD para moverte y CLICK para disparar."    // 3. Instrucción
                 });
             }
             else if (level == 2 && wave == 1)
             {
                 return ("MR. ROBOT", new List<string> {
-                    "Welcome to the Deep Web, kid.",
-                    "No rules here. Only survival.",
-                    "Don't trust anything. Not even me."
+                    "Has llegado a la Deep Web.",
+                    "Aquí no hay reglas. Solo supervivencia.",
+                    "Los ataques serán más complejos. Prepárate."
                 });
             }
             else if (level == 3 && wave == 1)
             {
                 return ("ELLIOT", new List<string> {
-                    "This is it. E-Corp's core.",
-                    "All their secrets. All their lies.",
-                    "Time to execute Phase 2."
+                    "Este es el núcleo de E-Corp.",
+                    "Todos sus secretos están aquí.",
+                    "Es hora de ejecutar la Fase 2."
                 });
             }
             else
             {
-                return ("SYSTEM", new List<string> {
-                    $"Initiating wave {wave}...",
-                    "Threat level increasing.",
-                    "Stay focused, operator."
+                return ("SISTEMA", new List<string> {
+                    $"Iniciando oleada {wave}...",
+                    "Nivel de amenaza aumentando."
                 });
             }
         }

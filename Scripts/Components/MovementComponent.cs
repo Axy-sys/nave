@@ -4,24 +4,31 @@ using CyberSecurityGame.Core.Interfaces;
 namespace CyberSecurityGame.Components
 {
 	/// <summary>
-	/// Componente de movimiento usando composición (Component Pattern)
-	/// Principio de Single Responsibility: solo maneja movimiento
+	/// Componente de movimiento ARCADE PURO
+	/// Sin inercia, sin física complicada - ¡RESPUESTA INSTANTÁNEA!
 	/// </summary>
 	public partial class MovementComponent : BaseComponent, IMovable
 	{
-		[Export] public float Speed = 300f;
-		[Export] public float Acceleration = 1000f;
-		[Export] public float Friction = 500f;
-		[Export] public bool UseAcceleration = true;
-
-		// Dash Configuration
-		[Export] public float DashSpeed = 800f;
-		[Export] public float DashDuration = 0.2f;
-		[Export] public float DashCooldown = 1.0f;
-		[Export] public float DashLoadCost = 15f; // Costo de CPU por Dash
+		// ═══════════════════════════════════════════════════════════════
+		// 🎮 ARCADE PURO - Sin física, sin tonterías
+		// ═══════════════════════════════════════════════════════════════
+		[Export] public float Speed = 550f;           // Velocidad base RÁPIDA
+		[Export] public float Acceleration = 99999f;  // INSTANTÁNEO
+		[Export] public float Friction = 99999f;      // PARA EN SECO
+		[Export] public float BrakingFriction = 99999f;
+		[Export] public bool UseAcceleration = false; // ¡DESACTIVADO! Movimiento directo
+		
+		// Dash/Dodge - MÁS rápido y frecuente
+		[Export] public float DashSpeed = 1200f;     // MEGA rápido
+		[Export] public float DashDuration = 0.15f;  // Corto y snappy
+		[Export] public float DashCooldown = 0.4f;   // Spammeable
+		[Export] public float DashLoadCost = 5f;     // Barato
 
 		private Vector2 _velocity = Vector2.Zero;
 		private CharacterBody2D _body;
+		
+		// Estado de frenado
+		private bool _isBraking = false;
 		
 		private bool _isDashing = false;
 		private float _dashTimer = 0f;
@@ -136,39 +143,32 @@ namespace CyberSecurityGame.Components
 
 		public void Move(Vector2 direction, double delta)
 		{
-			if (_body == null || _isDashing) return; // Don't allow normal movement control during dash
+			if (_body == null || _isDashing) return;
 
-			if (UseAcceleration)
+			// ═══════════════════════════════════════════════════════════
+			// 🎮 ARCADE PURO - RESPUESTA INSTANTÁNEA
+			// Presionas = te mueves. Sueltas = paras. Sin tonterías.
+			// ═══════════════════════════════════════════════════════════
+			
+			if (direction.Length() > 0.1f)
 			{
-				// Movimiento con aceleración suave
-				if (direction.Length() > 0)
-				{
-					_velocity += direction.Normalized() * Acceleration * (float)delta;
-					_velocity = _velocity.LimitLength(Speed);
-				}
-				else
-				{
-					// Aplicar fricción
-					var frictionAmount = Friction * (float)delta;
-					if (_velocity.Length() > frictionAmount)
-					{
-						_velocity -= _velocity.Normalized() * frictionAmount;
-					}
-					else
-					{
-						_velocity = Vector2.Zero;
-					}
-				}
+				// MOVIMIENTO DIRECTO - Sin aceleración, sin inercia
+				_velocity = direction.Normalized() * Speed;
 			}
 			else
 			{
-				// Movimiento directo
-				_velocity = direction.Normalized() * Speed;
+				// PARA EN SECO - Sin deriva
+				_velocity = Vector2.Zero;
 			}
 
 			_body.Velocity = _velocity;
 			_body.MoveAndSlide();
 		}
+		
+		/// <summary>
+		/// Indica si la nave está frenando activamente
+		/// </summary>
+		public bool IsBraking() => _isBraking;
 
 		public void SetSpeed(float speed)
 		{

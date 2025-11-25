@@ -26,6 +26,19 @@ namespace CyberSecurityGame.Components
 		{
 			_currentHealth = MaxHealth;
 			_isAlive = true;
+			
+			// Emitir salud inicial para que el HUD se actualice
+			if (IsPlayer)
+			{
+				// Usar CallDeferred para asegurar que el HUD ya está listo
+				CallDeferred(nameof(EmitInitialHealth));
+			}
+		}
+		
+		private void EmitInitialHealth()
+		{
+			GameEventBus.Instance.EmitPlayerHealthChanged(_currentHealth);
+			GD.Print($"[HealthComponent] Salud inicial emitida: {_currentHealth}");
 		}
 
 		protected override void OnUpdate(double delta)
@@ -46,8 +59,16 @@ namespace CyberSecurityGame.Components
 			float resistance = GetResistanceForDamageType(damageType);
 			float actualDamage = amount * (1f - resistance);
 
+			// FIREWALL MODE: Aplicar reducción de daño del sistema adaptativo
+			if (IsPlayer && CyberSecurityGame.Systems.AdaptiveDifficultySystem.Instance != null)
+			{
+				actualDamage = CyberSecurityGame.Systems.AdaptiveDifficultySystem.Instance.ApplyFirewallReduction(actualDamage);
+			}
+
 			_currentHealth -= actualDamage;
 			_currentHealth = Mathf.Max(0, _currentHealth);
+			
+			GD.Print($"[HealthComponent] Daño recibido: {actualDamage:F1} | Salud: {_currentHealth:F1}/{MaxHealth}");
 
 			if (IsPlayer)
 			{
@@ -139,15 +160,16 @@ namespace CyberSecurityGame.Components
 			if (IsPlayer)
 			{
 				GameEventBus.Instance.EmitPlayerDied();
+				// NO destruir al jugador - GameManager maneja respawn o game over
+				// El owner (Player) seguirá existiendo para posible respawn
 			}
 			else
 			{
 				// INTERACCIÓN: Explosión en cadena al morir
 				SpawnExplosion();
+				// Solo destruir enemigos
+				_owner?.CallDeferred("queue_free");
 			}
-			
-			// El owner (nave/enemigo) puede reaccionar a esto
-			_owner?.CallDeferred("queue_free");
 		}
 
 		private void SpawnExplosion()
@@ -212,6 +234,20 @@ namespace CyberSecurityGame.Components
 		public float GetHealthPercentage()
 		{
 			return MaxHealth > 0 ? _currentHealth / MaxHealth : 0f;
+		}
+		
+		/// <summary>
+		/// Resetea el componente de salud para respawn
+		/// </summary>
+		public void ResetForRespawn()
+		{
+			_currentHealth = MaxHealth;
+			_isAlive = true;
+			
+			if (IsPlayer)
+			{
+				GameEventBus.Instance.EmitPlayerHealthChanged(_currentHealth);
+			}
 		}
 	}
 }

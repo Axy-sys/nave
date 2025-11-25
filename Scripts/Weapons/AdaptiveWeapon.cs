@@ -14,9 +14,9 @@ namespace CyberSecurityGame.Weapons
 
 		public AdaptiveWeapon()
 		{
-			// Valores base
-			Damage = 10f;
-			ProjectileSpeed = 600f;
+			// Valores base - RÁPIDO Y SATISFACTORIO
+			Damage = 8f;
+			ProjectileSpeed = 900f; // MUY rápido
 			ProjectileScene = GD.Load<PackedScene>("res://Scenes/Projectile.tscn");
 		}
 
@@ -52,22 +52,23 @@ namespace CyberSecurityGame.Weapons
 
 		private void FirePrecision(Vector2 position, Vector2 direction)
 		{
-			var proj = SpawnProjectileCustom(position, direction, 800f, 15f, new Color(1,1,1)); // Terminal Green
+			// MODO PRECISIÓN - Cyan brillante, muy rápido
+			var proj = SpawnProjectileCustom(position, direction, 1000f, 12f, new Color("00ffff")); // Cyan
 		}
 
 		private void FireRapid(Vector2 position, Vector2 direction)
 		{
-			// Disparar 2 proyectiles con ligera desviación
-			SpawnProjectileCustom(position, direction.Rotated(Mathf.DegToRad(-5)), 600f, 10f, new Color("ffaa00")); // Flux Orange
-			SpawnProjectileCustom(position, direction.Rotated(Mathf.DegToRad(5)), 600f, 10f, new Color("ffaa00"));
+			// MODO RÁPIDO - Amarillo/naranja, doble
+			SpawnProjectileCustom(position, direction.Rotated(Mathf.DegToRad(-4)), 850f, 8f, new Color("ffcc00")); // Amarillo
+			SpawnProjectileCustom(position, direction.Rotated(Mathf.DegToRad(4)), 850f, 8f, new Color("ffcc00"));
 		}
 
 		private void FireChaos(Vector2 position, Vector2 direction)
 		{
-			// Escopeta: 3 proyectiles
-			SpawnProjectileCustom(position, direction, 450f, 20f, new Color("bf00ff")); // Rippier Purple
-			SpawnProjectileCustom(position, direction.Rotated(Mathf.DegToRad(-15)), 450f, 20f, new Color("bf00ff"));
-			SpawnProjectileCustom(position, direction.Rotated(Mathf.DegToRad(15)), 450f, 20f, new Color("bf00ff"));
+			// MODO CAOS - Púrpura/magenta, triple
+			SpawnProjectileCustom(position, direction, 700f, 15f, new Color("ff00ff")); // Magenta
+			SpawnProjectileCustom(position, direction.Rotated(Mathf.DegToRad(-12)), 700f, 15f, new Color("ff00ff"));
+			SpawnProjectileCustom(position, direction.Rotated(Mathf.DegToRad(12)), 700f, 15f, new Color("ff00ff"));
 		}
 
 		private Node2D SpawnProjectileCustom(Vector2 position, Vector2 direction, float speed, float damage, Color color)

@@ -13,11 +13,15 @@ namespace CyberSecurityGame
     /// Escena principal del juego
     /// Coordina todos los sistemas y la inicialización
     /// Incluye secuencia de intro cinematográfica
+    /// MODO: Bullet Hell con oleadas infinitas
     /// </summary>
     public partial class MainScene : Node2D
     {
         private GameManager _gameManager;
         private WaveSystem _waveSystem;
+        private InfiniteWaveSystem _infiniteWaveSystem;
+        private BulletHellSystem _bulletHellSystem;
+        private GrazingSystem _grazingSystem;
         private PowerUpSystem _powerUpSystem;
         private VulnerabilitySystem _vulnerabilitySystem;
         private QuizSystem _quizSystem;
@@ -26,11 +30,18 @@ namespace CyberSecurityGame
         private GameJuiceSystem _juiceSystem;
         private GameHUD _hud;
         private QuizView _quizView;
+        private EncyclopediaView _encyclopediaView;
         private ScreenEffects _screenEffects;
         private Entities.Player _player;
         
         private bool _introCompleted = false;
         private int _currentLevel = 1;
+        
+        // Modo de juego: true = Bullet Hell infinito, false = Modo campaña
+        private bool _infiniteMode = true;
+        
+        // Para detectar reinicios y saltear intro
+        private static bool _hasPlayedIntro = false;
 
         public override void _Ready()
         {
@@ -56,16 +67,12 @@ namespace CyberSecurityGame
                 GetTree().Root.AddChild(highScoreSystem);
             }
 
+
+
             // Game Manager
             _gameManager = new GameManager();
             _gameManager.Name = "GameManager";
             AddChild(_gameManager);
-
-            // Wave System (no inicia automáticamente ahora)
-            _waveSystem = new WaveSystem();
-            _waveSystem.Name = "WaveSystem";
-            _waveSystem.ProcessMode = ProcessModeEnum.Pausable;
-            AddChild(_waveSystem);
 
             // Power-Up System
             _powerUpSystem = new PowerUpSystem();
@@ -87,6 +94,16 @@ namespace CyberSecurityGame
             _tipsSystem = new SecurityTipsSystem();
             _tipsSystem.Name = "SecurityTipsSystem";
             AddChild(_tipsSystem);
+            
+            // Threat Encyclopedia (base de conocimiento educativa)
+            var threatEncyclopedia = new ThreatEncyclopedia();
+            threatEncyclopedia.Name = "ThreatEncyclopedia";
+            AddChild(threatEncyclopedia);
+            
+            // Contextual Learning System (quizzes en momentos óptimos)
+            var contextualLearning = new ContextualLearningSystem();
+            contextualLearning.Name = "ContextualLearningSystem";
+            AddChild(contextualLearning);
 
             // Dialogue System
             var dialogueSystem = new DialogueSystem();
@@ -97,6 +114,43 @@ namespace CyberSecurityGame
             _juiceSystem = new GameJuiceSystem();
             _juiceSystem.Name = "GameJuiceSystem";
             AddChild(_juiceSystem);
+
+            // ═══════════════════════════════════════════════════════════
+            // BULLET HELL SYSTEMS
+            // ═══════════════════════════════════════════════════════════
+            
+            // Bullet Hell System (patrones de balas)
+            _bulletHellSystem = new BulletHellSystem();
+            _bulletHellSystem.Name = "BulletHellSystem";
+            AddChild(_bulletHellSystem);
+
+            // Grazing System (rozar balas = puntos)
+            _grazingSystem = new GrazingSystem();
+            _grazingSystem.Name = "GrazingSystem";
+            AddChild(_grazingSystem);
+            
+            // Adaptive Difficulty System (dificultad adaptativa estilo Hades/Touhou)
+            var adaptiveSystem = new AdaptiveDifficultySystem();
+            adaptiveSystem.Name = "AdaptiveDifficultySystem";
+            AddChild(adaptiveSystem);
+
+            if (_infiniteMode)
+            {
+                // Infinite Wave System (modo bullet hell)
+                _infiniteWaveSystem = new InfiniteWaveSystem();
+                _infiniteWaveSystem.Name = "InfiniteWaveSystem";
+                _infiniteWaveSystem.ProcessMode = ProcessModeEnum.Pausable;
+                AddChild(_infiniteWaveSystem);
+                GD.Print(">>> MODO BULLET HELL INFINITO ACTIVADO <<<");
+            }
+            else
+            {
+                // Wave System tradicional (modo campaña)
+                _waveSystem = new WaveSystem();
+                _waveSystem.Name = "WaveSystem";
+                _waveSystem.ProcessMode = ProcessModeEnum.Pausable;
+                AddChild(_waveSystem);
+            }
 
             // Conectar eventos
             GameEventBus.Instance.OnVulnerabilityDetected += OnVulnerabilityDetected;
@@ -184,6 +238,21 @@ namespace CyberSecurityGame
             _quizView.Name = "QuizView";
             AddChild(_quizView);
 
+            // Encyclopedia View (Pokédex de amenazas - acceso con E)
+            _encyclopediaView = new EncyclopediaView();
+            _encyclopediaView.Name = "EncyclopediaView";
+            AddChild(_encyclopediaView);
+
+            // Offscreen Indicator System (flechas que muestran enemigos fuera de pantalla)
+            var offscreenIndicators = new OffscreenIndicatorSystem();
+            offscreenIndicators.Name = "OffscreenIndicators";
+            AddChild(offscreenIndicators);
+
+            // Non-Intrusive Notification System (avisos que no pausan el juego)
+            var notificationSystem = new NonIntrusiveNotificationSystem();
+            notificationSystem.Name = "NotificationSystem";
+            AddChild(notificationSystem);
+
             // NOTA: DialogueView está DESACTIVADO
             // Los diálogos ahora se manejan exclusivamente por MissionIntroSystem
             // para evitar superposición de UI y slow-motion no deseado
@@ -195,7 +264,19 @@ namespace CyberSecurityGame
         {
             // ═══════════════════════════════════════════════════════════
             // FASE 4: INTRO CINEMATOGRÁFICA
+            // 
+            // UX: Si el usuario ya vio la intro (reinició), saltearla
+            // para no frustrarlo con repetición innecesaria
             // ═══════════════════════════════════════════════════════════
+            
+            if (_hasPlayedIntro)
+            {
+                // Saltar intro en reinicios
+                GD.Print(">>> Intro salteada (reinicio detectado) <<<");
+                OnIntroCompleted();
+                return;
+            }
+            
             _missionIntro = new MissionIntroSystem();
             _missionIntro.Name = "MissionIntro";
             AddChild(_missionIntro);
@@ -211,11 +292,60 @@ namespace CyberSecurityGame
         private void OnIntroCompleted()
         {
             _introCompleted = true;
+            _hasPlayedIntro = true; // Marcar para futuros reinicios
             
-            // Ahora sí iniciamos el juego
-            _gameManager.StartGame();
+            // ═══════════════════════════════════════════════════════════════════
+            // INICIO DEL JUEGO
+            // 
+            // UX CRÍTICO: Usamos CallDeferred para garantizar que:
+            // 1. Todos los nodos hijos (_infiniteWaveSystem, etc.) estén listos
+            // 2. Los event listeners estén conectados
+            // 3. El árbol de escena esté completamente inicializado
+            // 
+            // Sin esto, tras reiniciar misión las oleadas no aparecen
+            // porque el evento GameStateChanged se emite antes de que
+            // InfiniteWaveSystem esté escuchando
+            // ═══════════════════════════════════════════════════════════════════
+            CallDeferred(nameof(StartGameDeferred));
             
             GD.Print(">>> MISIÓN INICIADA <<<");
+        }
+        
+        private void StartGameDeferred()
+        {
+            // Verificar que el sistema de oleadas está listo
+            if (_infiniteMode && _infiniteWaveSystem != null)
+            {
+                GD.Print("[Main] InfiniteWaveSystem verificado - Iniciando juego");
+            }
+            
+            _gameManager.StartGame();
+            
+            // Forzar inicio si el sistema no recibió el evento
+            // (seguridad extra para evitar el bug de oleadas no apareciendo)
+            if (_infiniteMode && _infiniteWaveSystem != null && !_infiniteWaveSystem.IsWaveActive())
+            {
+                GD.Print("[Main] Forzando inicio de modo infinito (failsafe)");
+                _infiniteWaveSystem.StartInfiniteMode();
+            }
+        }
+
+        private void SkipIntro()
+        {
+            if (_introCompleted) return;
+            
+            GD.Print(">>> Intro skippeada por el usuario <<<");
+            
+            // Limpiar la intro si existe
+            if (_missionIntro != null && IsInstanceValid(_missionIntro))
+            {
+                _missionIntro.IntroCompleted -= OnIntroCompleted;
+                _missionIntro.QueueFree();
+                _missionIntro = null;
+            }
+            
+            // Completar la intro manualmente
+            OnIntroCompleted();
         }
 
         private void OnWaveAnnounced(int wave, string title, string desc)
@@ -287,8 +417,25 @@ namespace CyberSecurityGame
 
         public override void _Input(InputEvent @event)
         {
-            // No procesar input durante la intro
-            if (!_introCompleted) return;
+            // ═══════════════════════════════════════════════════════════
+            // MANEJO DE INPUT
+            // 
+            // UX: ESC siempre debe funcionar:
+            // - Durante intro: Skipea la intro
+            // - Durante juego: Pausa
+            // - Durante pausa: Resume (manejado por GameHUD)
+            // ═══════════════════════════════════════════════════════════
+            
+            // Permitir skipear la intro con ESC o SPACE
+            if (!_introCompleted)
+            {
+                if (@event.IsActionPressed("ui_cancel") || @event.IsActionPressed("ui_accept"))
+                {
+                    SkipIntro();
+                    GetViewport().SetInputAsHandled();
+                }
+                return;
+            }
 
             // Manejo de Game Over
             if (_gameManager.CurrentState == GameState.GameOver)
@@ -316,6 +463,17 @@ namespace CyberSecurityGame
                 {
                     _gameManager.ResumeGame();
                     GD.Print("▶ Game Resumed");
+                }
+            }
+
+            // Enciclopedia de Amenazas (E para abrir)
+            if (@event is InputEventKey encKey && encKey.Pressed && encKey.Keycode == Key.E)
+            {
+                if (_gameManager.CurrentState == GameState.Playing || 
+                    _gameManager.CurrentState == GameState.Paused)
+                {
+                    _encyclopediaView.Toggle();
+                    GD.Print("📚 Encyclopedia toggled");
                 }
             }
 

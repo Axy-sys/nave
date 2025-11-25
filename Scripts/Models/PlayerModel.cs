@@ -75,6 +75,13 @@ namespace CyberSecurityGame.Models
 				CurrentHealth = MaxHealth; // Restaura salud al perder vida
 			}
 		}
+		
+		public void AddLife()
+		{
+			Lives++;
+			// Cap en MaxLives + 2 para no acumular infinitas
+			Lives = Mathf.Min(Lives, MaxLives + 2);
+		}
 
 		public void Reset(float maxHealth, int maxLives)
 		{

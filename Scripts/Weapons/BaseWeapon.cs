@@ -1,5 +1,6 @@
 using Godot;
 using CyberSecurityGame.Core.Interfaces;
+using CyberSecurityGame.Entities;
 
 namespace CyberSecurityGame.Weapons
 {
@@ -35,7 +36,7 @@ namespace CyberSecurityGame.Weapons
 		public abstract string GetWeaponName();
 		public abstract WeaponType GetWeaponType();
 
-		protected void SpawnProjectile(Vector2 position, Vector2 direction, DamageType damageType)
+		protected void SpawnProjectile(Vector2 position, Vector2 direction, DamageType damageType, bool isPlayerProjectile = true)
 		{
 			if (ProjectileScene == null)
 			{
@@ -49,20 +50,33 @@ namespace CyberSecurityGame.Weapons
 				return;
 			}
 
+			// Validar dirección
+			if (direction == Vector2.Zero || !direction.IsFinite())
+			{
+				GD.PrintErr($"BaseWeapon: dirección inválida {direction}");
+				direction = Vector2.Up;
+			}
+
 			var projectile = ProjectileScene.Instantiate() as Node2D;
 			if (projectile == null) return;
 
-			// Configurar projectile
+			// Configurar posición
 			projectile.GlobalPosition = position;
 			
-			// Si tiene script de proyectil, configurar velocidad y daño
-			if (projectile.HasMethod("Initialize"))
-			{
-				projectile.Call("Initialize", direction, ProjectileSpeed, Damage, (int)damageType);
-			}
-
-			// Agregar al árbol de escena usando el nodo raíz
+			GD.Print($"🔫 Spawning projectile at {position} dir {direction}");
+			
+			// PRIMERO añadir al árbol de escena
 			_sceneRoot.AddChild(projectile);
+			
+			// DESPUÉS inicializar (ahora _PhysicsProcess funcionará)
+			if (projectile is Projectile proj)
+			{
+				proj.Initialize(direction.Normalized(), ProjectileSpeed, Damage, (int)damageType, isPlayerProjectile);
+			}
+			else if (projectile.HasMethod("Initialize"))
+			{
+				projectile.Call("Initialize", direction.Normalized(), ProjectileSpeed, Damage, (int)damageType, isPlayerProjectile);
+			}
 		}
 	}
 }

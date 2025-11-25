@@ -1,16 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://cy4l5j0suky0w"]
+[gd_scene load_steps=2 format=3 uid="uid://cy4l5j0suky0w"]
 
 [ext_resource type="Script" path="res://Scripts/Boot.cs" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://t6gtxmta0kvm" path="res://icon.svg" id="2_icon"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0, 0, 0, 1)
-
-[sub_resource type="LabelSettings" id="LabelSettings_title"]
-font_size = 48
-font_color = Color(0, 1, 0, 1)
-shadow_color = Color(0, 0.5, 0, 0.5)
-shadow_offset = Vector2(2, 2)
 
 [node name="Boot" type="Control"]
 layout_mode = 3
@@ -21,61 +11,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="Panel" parent="."]
+[node name="InitContainer" type="Control" parent="."]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -140.0
+offset_right = 250.0
+offset_bottom = -80.0
 grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
-
-[node name="LogoContainer" type="VBoxContainer" parent="."]
-modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -100.0
-offset_right = 100.0
-offset_bottom = 100.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
-
-[node name="Logo" type="TextureRect" parent="LogoContainer"]
-custom_minimum_size = Vector2(100, 100)
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("2_icon")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="LogoText" type="Label" parent="LogoContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 1, 0.5, 1)
-theme_override_font_sizes/font_size = 28
-text = "CODE RIPPIER"
-horizontal_alignment = 1
-
-[node name="GameTitle" type="Label" parent="."]
-modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -30.0
-offset_right = 300.0
-offset_bottom = 30.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "CYBERSECURITY DEFENDER"
-label_settings = SubResource("LabelSettings_title")
-horizontal_alignment = 1
-vertical_alignment = 1
+grow_vertical = 0

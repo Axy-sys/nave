@@ -45,6 +45,7 @@ namespace CyberSecurityGame.Core.Events
 		// Eventos de nivel
 		public event Action<int> OnLevelStarted;
 		public event Action<int, string, string> OnWaveAnnounced; // Wave, Title, Description
+		public event Action<int> OnWaveCompleted; // Cuando una oleada termina
 		public event Action<int> OnLevelCompleted;
 		public event Action<string> OnBossSpawned;
 		
@@ -128,6 +129,11 @@ namespace CyberSecurityGame.Core.Events
 		public void EmitWaveAnnounced(int wave, string title, string description)
 		{
 			OnWaveAnnounced?.Invoke(wave, title, description);
+		}
+
+		public void EmitWaveCompleted(int wave)
+		{
+			OnWaveCompleted?.Invoke(wave);
 		}
 
 		public void EmitLevelCompleted(int level)

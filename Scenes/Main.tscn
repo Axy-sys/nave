@@ -23,23 +23,26 @@ texture = ExtResource("2_bg")
 centered = false
 
 [node name="Player" parent="." instance=ExtResource("3_kln2b")]
+position = Vector2(600, 700)
 
-[node name="Camera2D" type="Camera2D" parent="Player"]
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(600, 450)
+zoom = Vector2(1.0, 1.0)
 
 [node name="WorldBounds" type="StaticBody2D" parent="."]
 
 [node name="TopBound" type="CollisionShape2D" parent="WorldBounds"]
-position = Vector2(600, -10)
+position = Vector2(600, 0)
 shape = SubResource("WorldBoundaryShape2D_top")
 
 [node name="BottomBound" type="CollisionShape2D" parent="WorldBounds"]
-position = Vector2(600, 810)
+position = Vector2(600, 900)
 shape = SubResource("WorldBoundaryShape2D_bottom")
 
 [node name="LeftBound" type="CollisionShape2D" parent="WorldBounds"]
-position = Vector2(-10, 400)
+position = Vector2(0, 450)
 shape = SubResource("WorldBoundaryShape2D_left")
 
 [node name="RightBound" type="CollisionShape2D" parent="WorldBounds"]
-position = Vector2(1210, 400)
+position = Vector2(1200, 450)
 shape = SubResource("WorldBoundaryShape2D_right")

@@ -257,7 +257,6 @@ namespace CyberSecurityGame.Systems
         }
 
         private static int _comboCount = 0;
-        private static float _comboTimer = 0f;
 
         private void OnEnemyDefeated(string enemyType, int points)
         {
@@ -266,7 +265,6 @@ namespace CyberSecurityGame.Systems
             
             // Combo tracking simple
             _comboCount++;
-            _comboTimer = 2f;
             
             if (_comboCount >= 5)
             {
@@ -292,7 +290,7 @@ namespace CyberSecurityGame.Systems
         /// <summary>
         /// Slow motion temporal
         /// </summary>
-        public async void SlowMotion(float scale = 0.3f, float duration = 0.5f)
+        public void SlowMotion(float scale = 0.3f, float duration = 0.5f)
         {
             Engine.TimeScale = scale;
             

@@ -1,270 +1,385 @@
 using Godot;
 using System;
 using CyberSecurityGame.Core;
+using CyberSecurityGame.UI;
 
 /// <summary>
-/// Menú principal con estética web: Terminal window, CRT scanlines, glitch effects
-/// - Instantáneo pero con estilo visual sofisticado
-/// - Colores coordinados con la web
+/// Menú principal MODERNO y ATRACTIVO
+/// - Diseño limpio con animaciones suaves
+/// - Colores vibrantes pero elegantes
+/// - Feedback visual inmediato
+/// - Transiciones fluidas
 /// </summary>
 public partial class MainMenu : Control
 {
-	// Colores exactos de la web
-	private static readonly Color BG_COLOR = new Color("#050505");
-	private static readonly Color TERMINAL_GREEN = new Color("#00ff41");
-	private static readonly Color TERMINAL_DIM = new Color("#008F11");
-	private static readonly Color FLUX_ORANGE = new Color("#ffaa00");
-	private static readonly Color RIPPIER_PURPLE = new Color("#bf00ff");
-	private static readonly Color GLASS_BG = new Color(0, 0.08f, 0, 0.9f);
+	// Paleta de colores moderna
+	private static readonly Color BG_DARK = new Color("#0a0a0f");
+	private static readonly Color ACCENT_CYAN = new Color("#00d4ff");
+	private static readonly Color ACCENT_MAGENTA = new Color("#ff00aa");
+	private static readonly Color ACCENT_GOLD = new Color("#ffd700");
+	private static readonly Color TEXT_WHITE = new Color("#ffffff");
+	private static readonly Color TEXT_DIM = new Color("#666680");
 	
-	private Panel _terminalWindow;
+	// UI Elements
+	private ColorRect _background;
+	private Control _logoContainer;
 	private Label _titleLabel;
 	private Label _subtitleLabel;
-	private Label _recordLabel;
 	private VBoxContainer _menuContainer;
 	private Button _playButton;
-	private Button _recordsButton;
 	private Button _tutorialButton;
 	private Button _quitButton;
-	private ColorRect _scanlines;
+	private Panel _scoresPanel;
+	private VBoxContainer _scoresContainer;
+	
+	// Animation
 	private float _timer = 0f;
-	private Random _rng = new Random();
+	private bool _animationComplete = false;
 
 	public override void _Ready()
 	{
+		InitializeSystems();
+		CreateModernUI();
+		PlayEntranceAnimation();
+	}
+	
+	private void InitializeSystems()
+	{
+		if (ArcadeScoreSystem.Instance == null)
+		{
+			var arcadeSystem = new ArcadeScoreSystem();
+			arcadeSystem.Name = "ArcadeScoreSystem";
+			GetTree().Root.AddChild(arcadeSystem);
+		}
+		
 		if (HighScoreSystem.Instance == null)
 		{
 			var highScoreSystem = new HighScoreSystem();
 			highScoreSystem.Name = "HighScoreSystem";
 			GetTree().Root.AddChild(highScoreSystem);
 		}
-		
-		CreateWebStyleUI();
-		_playButton.GrabFocus();
 	}
 	
-	private void CreateWebStyleUI()
+	private void CreateModernUI()
 	{
-		// Fondo con gradiente radial (simulado)
-		var bg = new ColorRect();
-		bg.Color = BG_COLOR;
-		bg.SetAnchorsPreset(LayoutPreset.FullRect);
-		AddChild(bg);
+		// ═══════════════════════════════════════════════════════════
+		// FONDO
+		// ═══════════════════════════════════════════════════════════
+		_background = new ColorRect();
+		_background.SetAnchorsPreset(LayoutPreset.FullRect);
+		_background.Color = BG_DARK;
+		AddChild(_background);
 		
-		// Terminal Window (como la web)
-		_terminalWindow = new Panel();
-		_terminalWindow.SetAnchorsPreset(LayoutPreset.Center);
-		_terminalWindow.CustomMinimumSize = new Vector2(700, 550);
-		_terminalWindow.GrowHorizontal = GrowDirection.Both;
-		_terminalWindow.GrowVertical = GrowDirection.Both;
+		// Partículas de fondo
+		CreateBackgroundParticles();
 		
-		var terminalStyle = new StyleBoxFlat();
-		terminalStyle.BgColor = new Color(0, 0, 0, 0.9f);
-		terminalStyle.BorderColor = TERMINAL_DIM;
-		terminalStyle.SetBorderWidthAll(1);
-		terminalStyle.SetCornerRadiusAll(5);
-		terminalStyle.ShadowColor = new Color(TERMINAL_GREEN, 0.2f);
-		terminalStyle.ShadowSize = 15;
-		_terminalWindow.AddThemeStyleboxOverride("panel", terminalStyle);
-		AddChild(_terminalWindow);
+		// ═══════════════════════════════════════════════════════════
+		// CONTENEDOR PRINCIPAL
+		// ═══════════════════════════════════════════════════════════
+		var mainContainer = new VBoxContainer();
+		mainContainer.Name = "MainContainer";
+		mainContainer.SetAnchorsPreset(LayoutPreset.Center);
+		mainContainer.GrowHorizontal = GrowDirection.Both;
+		mainContainer.GrowVertical = GrowDirection.Both;
+		mainContainer.CustomMinimumSize = new Vector2(600, 500);
+		mainContainer.AddThemeConstantOverride("separation", 25);
+		AddChild(mainContainer);
 		
-		// Terminal Header (dots como la web)
-		var header = new HBoxContainer();
-		header.SetAnchorsPreset(LayoutPreset.TopWide);
-		header.OffsetBottom = 35;
-		header.AddThemeConstantOverride("separation", 8);
+		// ═══════════════════════════════════════════════════════════
+		// LOGO / TÍTULO
+		// ═══════════════════════════════════════════════════════════
+		_logoContainer = new Control();
+		_logoContainer.CustomMinimumSize = new Vector2(600, 120);
+		mainContainer.AddChild(_logoContainer);
 		
-		var headerBg = new StyleBoxFlat();
-		headerBg.BgColor = new Color("#1a1a1a");
-		headerBg.ContentMarginLeft = 15;
-		headerBg.ContentMarginTop = 10;
-		
-		var headerPanel = new Panel();
-		headerPanel.SetAnchorsPreset(LayoutPreset.TopWide);
-		headerPanel.OffsetBottom = 35;
-		headerPanel.AddThemeStyleboxOverride("panel", headerBg);
-		_terminalWindow.AddChild(headerPanel);
-		
-		// Dots
-		var dotsContainer = new HBoxContainer();
-		dotsContainer.Position = new Vector2(15, 12);
-		dotsContainer.AddThemeConstantOverride("separation", 8);
-		headerPanel.AddChild(dotsContainer);
-		
-		foreach (var color in new[] { "#ff5f56", "#ffbd2e", "#27c93f" })
-		{
-			var dot = new ColorRect();
-			dot.CustomMinimumSize = new Vector2(12, 12);
-			dot.Color = new Color(color);
-			dotsContainer.AddChild(dot);
-		}
-		
-		// Título en header
-		var headerTitle = new Label();
-		headerTitle.Text = "main_menu.sys";
-		headerTitle.Position = new Vector2(80, 8);
-		headerTitle.AddThemeColorOverride("font_color", new Color("#666666"));
-		headerTitle.AddThemeFontSizeOverride("font_size", 14);
-		headerPanel.AddChild(headerTitle);
-		
-		// Contenido del terminal
-		var content = new VBoxContainer();
-		content.SetAnchorsPreset(LayoutPreset.FullRect);
-		content.OffsetTop = 45;
-		content.OffsetLeft = 25;
-		content.OffsetRight = -25;
-		content.OffsetBottom = -20;
-		content.AddThemeConstantOverride("separation", 12);
-		_terminalWindow.AddChild(content);
-		
-		// Título con efecto glitch
 		_titleLabel = new Label();
-		_titleLabel.HorizontalAlignment = HorizontalAlignment.Left;
-		_titleLabel.AddThemeColorOverride("font_color", TERMINAL_GREEN);
-		_titleLabel.AddThemeFontSizeOverride("font_size", 16);
-		_titleLabel.Text = "> PROJECT: R.I.P.";
-		content.AddChild(_titleLabel);
+		_titleLabel.Text = "CODE RIPPIER";
+		_titleLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_titleLabel.SetAnchorsPreset(LayoutPreset.TopWide);
+		_titleLabel.AddThemeColorOverride("font_color", TEXT_WHITE);
+		_titleLabel.AddThemeFontSizeOverride("font_size", 58);
+		_titleLabel.Modulate = new Color(1, 1, 1, 0);
+		_logoContainer.AddChild(_titleLabel);
 		
 		_subtitleLabel = new Label();
-		_subtitleLabel.AddThemeColorOverride("font_color", RIPPIER_PURPLE);
-		_subtitleLabel.AddThemeFontSizeOverride("font_size", 14);
-		_subtitleLabel.Text = "  [Real-time Intrusion Prevention] :: CodeRippier";
-		content.AddChild(_subtitleLabel);
+		_subtitleLabel.Text = "⚡ Real-time Intrusion Prevention ⚡";
+		_subtitleLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_subtitleLabel.SetAnchorsPreset(LayoutPreset.TopWide);
+		_subtitleLabel.OffsetTop = 65;
+		_subtitleLabel.AddThemeColorOverride("font_color", ACCENT_CYAN);
+		_subtitleLabel.AddThemeFontSizeOverride("font_size", 16);
+		_subtitleLabel.Modulate = new Color(1, 1, 1, 0);
+		_logoContainer.AddChild(_subtitleLabel);
 		
-		// Separador
-		var sep = new Label();
-		sep.AddThemeColorOverride("font_color", TERMINAL_DIM);
-		sep.AddThemeFontSizeOverride("font_size", 12);
-		sep.Text = "  ─────────────────────────────────────────────";
-		content.AddChild(sep);
+		// Línea decorativa
+		var decorLine = new ColorRect();
+		decorLine.Name = "DecorLine";
+		decorLine.SetAnchorsPreset(LayoutPreset.TopWide);
+		decorLine.OffsetTop = 95;
+		decorLine.OffsetBottom = 98;
+		decorLine.OffsetLeft = 180;
+		decorLine.OffsetRight = -180;
+		decorLine.Color = ACCENT_CYAN;
+		decorLine.Modulate = new Color(1, 1, 1, 0);
+		_logoContainer.AddChild(decorLine);
 		
-		// Record
-		_recordLabel = new Label();
-		_recordLabel.AddThemeColorOverride("font_color", FLUX_ORANGE);
-		_recordLabel.AddThemeFontSizeOverride("font_size", 18);
-		int topScore = HighScoreSystem.Instance?.GetTopScore() ?? 0;
-		_recordLabel.Text = topScore > 0 ? $"  >>> HIGH SCORE: {topScore:N0} <<<" : "  >>> NO RECORDS YET <<<";
-		content.AddChild(_recordLabel);
-		
-		// Menú de opciones
+		// ═══════════════════════════════════════════════════════════
+		// BOTONES
+		// ═══════════════════════════════════════════════════════════
 		_menuContainer = new VBoxContainer();
-		_menuContainer.AddThemeConstantOverride("separation", 8);
-		content.AddChild(_menuContainer);
+		_menuContainer.Name = "MenuContainer";
+		_menuContainer.AddThemeConstantOverride("separation", 12);
+		_menuContainer.Modulate = new Color(1, 1, 1, 0);
+		mainContainer.AddChild(_menuContainer);
 		
-		// Prompt
-		var prompt = new Label();
-		prompt.AddThemeColorOverride("font_color", TERMINAL_DIM);
-		prompt.AddThemeFontSizeOverride("font_size", 14);
-		prompt.Text = "\n  user@defense:~$ select_option";
-		_menuContainer.AddChild(prompt);
+		var buttonCenter = new HBoxContainer();
+		buttonCenter.Alignment = BoxContainer.AlignmentMode.Center;
+		_menuContainer.AddChild(buttonCenter);
 		
-		// Botones estilo terminal
-		_playButton = CreateTerminalButton("[1] INICIAR_SISTEMA", "Comenzar partida");
+		var buttonVBox = new VBoxContainer();
+		buttonVBox.AddThemeConstantOverride("separation", 10);
+		buttonCenter.AddChild(buttonVBox);
+		
+		_playButton = CreateModernButton("▶  JUGAR", ACCENT_CYAN, true);
 		_playButton.Pressed += OnPlayPressed;
-		_menuContainer.AddChild(_playButton);
+		buttonVBox.AddChild(_playButton);
 		
-		_recordsButton = CreateTerminalButton("[2] VER_LEADERBOARD", "Tabla de récords");
-		_recordsButton.Pressed += OnRecordsPressed;
-		_menuContainer.AddChild(_recordsButton);
-		
-		_tutorialButton = CreateTerminalButton("[3] TUTORIAL_MODE", "Aprende a jugar");
+		_tutorialButton = CreateModernButton("?  TUTORIAL", ACCENT_GOLD, false);
 		_tutorialButton.Pressed += OnTutorialPressed;
-		_menuContainer.AddChild(_tutorialButton);
+		buttonVBox.AddChild(_tutorialButton);
 		
-		_quitButton = CreateTerminalButton("[4] EXIT_SYSTEM", "Cerrar aplicación");
+		_quitButton = CreateModernButton("✕  SALIR", ACCENT_MAGENTA, false);
 		_quitButton.Pressed += OnQuitPressed;
-		_menuContainer.AddChild(_quitButton);
+		buttonVBox.AddChild(_quitButton);
 		
-		// Footer con controles
-		var footer = new Label();
-		footer.AddThemeColorOverride("font_color", new Color(0.4f, 0.4f, 0.4f));
-		footer.AddThemeFontSizeOverride("font_size", 14);
-		footer.Text = "\n  [↑↓] Navigate   [ENTER] Select   [1-4] Quick Access   [ESC] Exit";
-		content.AddChild(footer);
+		// ═══════════════════════════════════════════════════════════
+		// HIGH SCORES
+		// ═══════════════════════════════════════════════════════════
+		_scoresPanel = new Panel();
+		_scoresPanel.Name = "ScoresPanel";
+		_scoresPanel.CustomMinimumSize = new Vector2(350, 130);
+		_scoresPanel.Modulate = new Color(1, 1, 1, 0);
 		
-		// CRT Scanlines
-		_scanlines = new ColorRect();
-		_scanlines.SetAnchorsPreset(LayoutPreset.FullRect);
-		_scanlines.MouseFilter = MouseFilterEnum.Ignore;
-		_scanlines.Color = new Color(0, 1, 0.25f, 0.03f);
-		AddChild(_scanlines);
+		var scoresPanelStyle = new StyleBoxFlat();
+		scoresPanelStyle.BgColor = new Color(0.05f, 0.05f, 0.1f, 0.8f);
+		scoresPanelStyle.BorderColor = new Color(ACCENT_CYAN, 0.3f);
+		scoresPanelStyle.SetBorderWidthAll(1);
+		scoresPanelStyle.SetCornerRadiusAll(8);
+		_scoresPanel.AddThemeStyleboxOverride("panel", scoresPanelStyle);
+		mainContainer.AddChild(_scoresPanel);
+		
+		_scoresContainer = new VBoxContainer();
+		_scoresContainer.SetAnchorsPreset(LayoutPreset.FullRect);
+		_scoresContainer.OffsetLeft = 15;
+		_scoresContainer.OffsetRight = -15;
+		_scoresContainer.OffsetTop = 12;
+		_scoresContainer.OffsetBottom = -12;
+		_scoresContainer.AddThemeConstantOverride("separation", 4);
+		_scoresPanel.AddChild(_scoresContainer);
+		
+		var scoresHeader = new Label();
+		scoresHeader.Text = "═══ TOP SCORES ═══";
+		scoresHeader.HorizontalAlignment = HorizontalAlignment.Center;
+		scoresHeader.AddThemeColorOverride("font_color", ACCENT_GOLD);
+		scoresHeader.AddThemeFontSizeOverride("font_size", 14);
+		_scoresContainer.AddChild(scoresHeader);
+		
+		UpdateTopScores();
+		
+		// ═══════════════════════════════════════════════════════════
+		// CONTROLES HINT
+		// ═══════════════════════════════════════════════════════════
+		var controlsHint = new Label();
+		controlsHint.Name = "ControlsHint";
+		controlsHint.Text = "WASD Mover  •  Mouse Apuntar  •  Click Disparar  •  Space Evadir";
+		controlsHint.HorizontalAlignment = HorizontalAlignment.Center;
+		controlsHint.AddThemeColorOverride("font_color", TEXT_DIM);
+		controlsHint.AddThemeFontSizeOverride("font_size", 11);
+		controlsHint.Modulate = new Color(1, 1, 1, 0);
+		mainContainer.AddChild(controlsHint);
+		
+		// ═══════════════════════════════════════════════════════════
+		// VERSION
+		// ═══════════════════════════════════════════════════════════
+		var versionLabel = new Label();
+		versionLabel.Text = "v1.0 | Godot 4 + C#";
+		versionLabel.SetAnchorsPreset(LayoutPreset.BottomRight);
+		versionLabel.OffsetLeft = -150;
+		versionLabel.OffsetTop = -25;
+		versionLabel.OffsetRight = -15;
+		versionLabel.OffsetBottom = -8;
+		versionLabel.HorizontalAlignment = HorizontalAlignment.Right;
+		versionLabel.AddThemeColorOverride("font_color", new Color(0.3f, 0.3f, 0.4f));
+		versionLabel.AddThemeFontSizeOverride("font_size", 10);
+		AddChild(versionLabel);
 	}
 	
-	private Button CreateTerminalButton(string text, string tooltip)
+	private void CreateBackgroundParticles()
+	{
+		var particles = new CpuParticles2D();
+		particles.Position = new Vector2(600, 450);
+		particles.Amount = 40;
+		particles.Lifetime = 6f;
+		particles.Preprocess = 4f;
+		particles.Explosiveness = 0f;
+		particles.EmissionShape = CpuParticles2D.EmissionShapeEnum.Rectangle;
+		particles.EmissionRectExtents = new Vector2(650, 480);
+		particles.Direction = new Vector2(0, -1);
+		particles.Spread = 15f;
+		particles.InitialVelocityMin = 8f;
+		particles.InitialVelocityMax = 25f;
+		particles.ScaleAmountMin = 1f;
+		particles.ScaleAmountMax = 2.5f;
+		particles.Color = new Color(ACCENT_CYAN, 0.25f);
+		AddChild(particles);
+	}
+	
+	private Button CreateModernButton(string text, Color accentColor, bool isPrimary)
 	{
 		var button = new Button();
-		button.Text = "      " + text;
-		button.TooltipText = tooltip;
-		button.CustomMinimumSize = new Vector2(400, 45);
+		button.Text = text;
+		button.CustomMinimumSize = new Vector2(260, isPrimary ? 55 : 45);
 		button.FocusMode = FocusModeEnum.All;
-		button.Alignment = HorizontalAlignment.Left;
 		
-		button.AddThemeColorOverride("font_color", new Color("#ffffff"));
-		button.AddThemeColorOverride("font_hover_color", BG_COLOR);
-		button.AddThemeColorOverride("font_focus_color", BG_COLOR);
-		button.AddThemeColorOverride("font_pressed_color", BG_COLOR);
-		button.AddThemeFontSizeOverride("font_size", 18);
+		button.AddThemeColorOverride("font_color", isPrimary ? BG_DARK : TEXT_WHITE);
+		button.AddThemeColorOverride("font_hover_color", BG_DARK);
+		button.AddThemeColorOverride("font_focus_color", BG_DARK);
+		button.AddThemeColorOverride("font_pressed_color", BG_DARK);
+		button.AddThemeFontSizeOverride("font_size", isPrimary ? 22 : 18);
 		
-		// Estilo normal - transparente
 		var normalStyle = new StyleBoxFlat();
-		normalStyle.BgColor = new Color(0, 0, 0, 0);
-		normalStyle.BorderColor = TERMINAL_DIM;
-		normalStyle.BorderWidthLeft = 0;
-		normalStyle.BorderWidthRight = 0;
-		normalStyle.BorderWidthTop = 0;
-		normalStyle.BorderWidthBottom = 0;
+		normalStyle.BgColor = isPrimary ? accentColor : new Color(0.1f, 0.1f, 0.15f, 0.9f);
+		normalStyle.BorderColor = accentColor;
+		normalStyle.SetBorderWidthAll(isPrimary ? 0 : 2);
+		normalStyle.SetCornerRadiusAll(6);
 		button.AddThemeStyleboxOverride("normal", normalStyle);
 		
-		// Estilo hover/focus - verde terminal con glow
-		var focusStyle = new StyleBoxFlat();
-		focusStyle.BgColor = TERMINAL_GREEN;
-		focusStyle.BorderColor = TERMINAL_GREEN;
-		focusStyle.SetBorderWidthAll(0);
-		focusStyle.ContentMarginLeft = 10;
-		button.AddThemeStyleboxOverride("hover", focusStyle);
-		button.AddThemeStyleboxOverride("focus", focusStyle);
-		button.AddThemeStyleboxOverride("pressed", focusStyle);
+		var hoverStyle = new StyleBoxFlat();
+		hoverStyle.BgColor = accentColor;
+		hoverStyle.BorderColor = accentColor;
+		hoverStyle.SetBorderWidthAll(0);
+		hoverStyle.SetCornerRadiusAll(6);
+		hoverStyle.ShadowColor = new Color(accentColor, 0.4f);
+		hoverStyle.ShadowSize = 8;
+		button.AddThemeStyleboxOverride("hover", hoverStyle);
+		button.AddThemeStyleboxOverride("focus", hoverStyle);
+		button.AddThemeStyleboxOverride("pressed", hoverStyle);
+		
+		button.MouseEntered += () => {
+			var tween = CreateTween();
+			tween.TweenProperty(button, "scale", new Vector2(1.03f, 1.03f), 0.08f);
+		};
+		button.MouseExited += () => {
+			var tween = CreateTween();
+			tween.TweenProperty(button, "scale", Vector2.One, 0.08f);
+		};
+		
+		button.PivotOffset = button.CustomMinimumSize / 2;
 		
 		return button;
+	}
+	
+	private void UpdateTopScores()
+	{
+		var leaderboard = ArcadeScoreSystem.Instance?.GetTopScores(3);
+		string[] medals = { "🥇", "🥈", "🥉" };
+		Color[] colors = { ACCENT_GOLD, new Color("#c0c0c0"), new Color("#cd7f32") };
+		
+		for (int i = 0; i < 3; i++)
+		{
+			var scoreLine = new Label();
+			scoreLine.Name = $"ScoreLine{i}";
+			scoreLine.HorizontalAlignment = HorizontalAlignment.Center;
+			scoreLine.AddThemeFontSizeOverride("font_size", 16);
+			
+			if (leaderboard != null && i < leaderboard.Count)
+			{
+				var entry = leaderboard[i];
+				scoreLine.Text = $"{medals[i]}  {entry.Initials}  {entry.Score,9:N0}";
+				scoreLine.AddThemeColorOverride("font_color", colors[i]);
+			}
+			else
+			{
+				scoreLine.Text = $"{medals[i]}  ---  ---------";
+				scoreLine.AddThemeColorOverride("font_color", TEXT_DIM);
+			}
+			_scoresContainer.AddChild(scoreLine);
+		}
+	}
+	
+	private void PlayEntranceAnimation()
+	{
+		var tween = CreateTween();
+		tween.SetParallel(false);
+		
+		_titleLabel.Position = new Vector2(0, -40);
+		tween.TweenProperty(_titleLabel, "modulate:a", 1f, 0.4f);
+		tween.Parallel().TweenProperty(_titleLabel, "position:y", 0f, 0.4f)
+			.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
+		
+		tween.TweenProperty(_subtitleLabel, "modulate:a", 1f, 0.25f);
+		
+		var decorLine = _logoContainer.GetNodeOrNull<ColorRect>("DecorLine");
+		if (decorLine != null)
+			tween.TweenProperty(decorLine, "modulate:a", 1f, 0.2f);
+		
+		tween.TweenProperty(_menuContainer, "modulate:a", 1f, 0.3f);
+		tween.TweenProperty(_scoresPanel, "modulate:a", 1f, 0.25f);
+		
+		var mainContainer = GetNodeOrNull<VBoxContainer>("MainContainer");
+		var controlsHint = mainContainer?.GetNodeOrNull<Label>("ControlsHint");
+		if (controlsHint != null)
+			tween.TweenProperty(controlsHint, "modulate:a", 1f, 0.2f);
+		
+		tween.TweenCallback(Callable.From(() => {
+			_animationComplete = true;
+			_playButton.GrabFocus();
+		}));
 	}
 	
 	public override void _Process(double delta)
 	{
 		_timer += (float)delta;
 		
-		// Glitch sutil en el título
-		if (_rng.NextDouble() < 0.01)
+		if (_animationComplete)
 		{
-			_titleLabel.AddThemeColorOverride("font_color", 
-				_rng.NextDouble() > 0.5 ? RIPPIER_PURPLE : TERMINAL_GREEN);
+			float glow = 0.85f + 0.15f * Mathf.Sin(_timer * 2f);
+			_titleLabel.AddThemeColorOverride("font_color", new Color(glow, glow, glow));
+			
+			float pulse = 0.75f + 0.25f * Mathf.Sin(_timer * 1.5f);
+			_subtitleLabel.AddThemeColorOverride("font_color", new Color(ACCENT_CYAN, pulse));
 		}
-		else
-		{
-			_titleLabel.AddThemeColorOverride("font_color", TERMINAL_GREEN);
-		}
-		
-		// Scanline animation
-		float alpha = 0.02f + 0.015f * Mathf.Sin(_timer * 4);
-		_scanlines.Color = new Color(0, 1, 0.25f, alpha);
 	}
 	
-	private void OnPlayPressed() => GetTree().ChangeSceneToFile("res://Scenes/Main.tscn");
-	private void OnRecordsPressed() => GetTree().ChangeSceneToFile("res://Scenes/Leaderboard.tscn");
-	private void OnTutorialPressed() => GetTree().ChangeSceneToFile("res://Scenes/Tutorial.tscn");
-	private void OnQuitPressed() => GetTree().Quit();
+	private void OnPlayPressed()
+	{
+		var tween = CreateTween();
+		tween.TweenProperty(this, "modulate:a", 0f, 0.25f);
+		tween.TweenCallback(Callable.From(() => {
+			GetTree().ChangeSceneToFile("res://Scenes/Main.tscn");
+		}));
+	}
+	
+	private void OnTutorialPressed()
+	{
+		GetTree().ChangeSceneToFile("res://Scenes/Tutorial.tscn");
+	}
+	
+	private void OnQuitPressed()
+	{
+		var tween = CreateTween();
+		tween.TweenProperty(this, "modulate:a", 0f, 0.15f);
+		tween.TweenCallback(Callable.From(() => GetTree().Quit()));
+	}
 	
 	public override void _Input(InputEvent @event)
 	{
+		if (!_animationComplete) return;
+		
 		if (@event is InputEventKey keyEvent && keyEvent.Pressed && !keyEvent.Echo)
 		{
-			switch (keyEvent.Keycode)
-			{
-				case Key.Key1: OnPlayPressed(); break;
-				case Key.Key2: OnRecordsPressed(); break;
-				case Key.Key3: OnTutorialPressed(); break;
-				case Key.Key4:
-				case Key.Escape: OnQuitPressed(); break;
-			}
+			if (keyEvent.Keycode == Key.Escape)
+				OnQuitPressed();
 		}
 	}
 }

@@ -45,6 +45,9 @@ namespace CyberSecurityGame.Entities
 			enemy.CollisionLayer = 4; // Capa de enemigos
 			enemy.CollisionMask = 3;  // Jugador y Proyectiles
 			
+			// Añadir al grupo "Enemy" para detección por sistemas (ej: indicadores offscreen)
+			enemy.AddToGroup("Enemy");
+			
 			// ═══════════════════════════════════════════════════════════
 			// SPRITE ÚNICO POR TIPO DE ENEMIGO
 			// ═══════════════════════════════════════════════════════════
@@ -115,23 +118,26 @@ namespace CyberSecurityGame.Entities
 
 		private static Vector2 GetEnemyScale(EnemyType type)
 		{
+			// BALANCE ARCADE: Sprites grandes y visibles, hitboxes ajustados
 			return type switch
 			{
-				EnemyType.Ransomware => new Vector2(1.2f, 1.2f), // Boss más grande
-				EnemyType.DDoS => new Vector2(0.7f, 0.7f), // Más pequeño (son muchos)
-				EnemyType.Worm => new Vector2(0.6f, 0.6f), // Pequeño y rápido
-				_ => new Vector2(0.8f, 0.8f)
+				EnemyType.Ransomware => new Vector2(1.5f, 1.5f), // Boss MUY grande
+				EnemyType.DDoS => new Vector2(0.9f, 0.9f),       // Enjambre visible
+				EnemyType.Worm => new Vector2(0.8f, 0.8f),       // Rápido pero visible
+				_ => new Vector2(1.1f, 1.1f)                     // Estándar grande
 			};
 		}
 
 		private static float GetCollisionRadius(EnemyType type)
 		{
+			// HITBOXES PERMISIVOS (más pequeños que el sprite)
+			// Esto hace que el juego se sienta "justo" y permite esquivar por los pelos
 			return type switch
 			{
-				EnemyType.Ransomware => 30f,
-				EnemyType.DDoS => 15f,
-				EnemyType.Worm => 12f,
-				_ => 20f
+				EnemyType.Ransomware => 40f, // Sprite es enorme, hitbox contenido
+				EnemyType.DDoS => 18f,       // Pequeño
+				EnemyType.Worm => 15f,       // Muy pequeño
+				_ => 25f                     // Estándar
 			};
 		}
 

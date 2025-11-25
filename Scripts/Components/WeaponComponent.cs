@@ -10,8 +10,8 @@ namespace CyberSecurityGame.Components
 	/// </summary>
 	public partial class WeaponComponent : BaseComponent
 	{
-		[Export] public float FireRate = 0.2f; // Tiempo entre disparos
-		[Export] public float LoadCost = 10f; // Costo de CPU por disparo
+		[Export] public float FireRate = 0.06f; // MUY RÁPIDO - 16 disparos/seg
+		[Export] public float LoadCost = 3f;    // Bajo costo - disparar es divertido
 		[Export] public PackedScene ProjectileScene;
 		
 		private IWeapon _currentWeapon;
@@ -74,6 +74,41 @@ namespace CyberSecurityGame.Components
 			}
 			
 			return true;
+		}
+
+		/// <summary>
+		/// Dispara desde una posición específica (ej: morro de la nave)
+		/// </summary>
+		public bool TryFireFrom(Vector2 position, Vector2 direction)
+		{
+			if (_currentWeapon == null || !CanFire()) return false;
+
+			_currentWeapon.Fire(position, direction);
+			_fireTimer = FireRate;
+			
+			// Generar carga de CPU
+			if (_cpuComponent != null)
+			{
+				_cpuComponent.AddLoad(LoadCost);
+			}
+			
+			return true;
+		}
+
+		/// <summary>
+		/// Dispara forzando el disparo sin respetar cooldown (para multishot/bursts)
+		/// </summary>
+		public void ForceFire(Vector2 position, Vector2 direction)
+		{
+			if (_currentWeapon == null) return;
+
+			_currentWeapon.Fire(position, direction);
+			
+			// Generar carga de CPU también
+			if (_cpuComponent != null)
+			{
+				_cpuComponent.AddLoad(LoadCost);
+			}
 		}
 
 		public bool CanFire()

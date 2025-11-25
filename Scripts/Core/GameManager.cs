@@ -1,6 +1,7 @@
 using Godot;
 using CyberSecurityGame.Core.Events;
 using CyberSecurityGame.Models;
+using CyberSecurityGame.Entities;
 
 namespace CyberSecurityGame.Core
 {
@@ -14,19 +15,33 @@ namespace CyberSecurityGame.Core
 		private static GameManager _instance;
 		public static GameManager Instance => _instance;
 
-		[Export] public int StartingLives = 3;
+		[Export] public int StartingLives = 4; // BALANCE: 4 vidas para dar más oportunidades
 		[Export] public float DifficultyIncreaseRate = 0.1f;
 
 		// Referencias a modelos (Model en MVC)
 		private GameStateModel _gameState;
 		private PlayerModel _playerModel;
 		
+		// Referencia al jugador
+		private Player _player;
+		
 		// Estado del juego
 		public GameState CurrentState { get; private set; }
 		public int CurrentLevel { get; private set; }
 		public int Score { get; private set; }
 		public float DifficultyMultiplier { get; private set; }
+		public int Lives { get; private set; }
+		public int Deaths { get; private set; } = 0;  // Contador de muertes para estadísticas
 
+		public override void _Process(double delta)
+		{
+			// Reducir cooldown de tips
+			if (_tipCooldown > 0)
+			{
+				_tipCooldown -= (float)delta;
+			}
+		}
+		
 		public override void _Ready()
 		{
 			if (_instance != null && _instance != this)
@@ -48,9 +63,10 @@ namespace CyberSecurityGame.Core
 			CurrentState = GameState.Menu;
 			CurrentLevel = 1;
 			Score = 0;
+			Lives = StartingLives;
 			DifficultyMultiplier = 1.0f;
 			
-			GD.Print("GameManager inicializado - Juego de Ciberseguridad");
+			GD.Print($"GameManager inicializado - {StartingLives} vidas");
 		}
 
 		private void SubscribeToEvents()
@@ -66,13 +82,18 @@ namespace CyberSecurityGame.Core
 			CurrentState = GameState.Playing;
 			CurrentLevel = 1;
 			Score = 0;
+			Lives = StartingLives;
 			DifficultyMultiplier = 1.0f;
 			
 			_playerModel.Reset(100f, StartingLives);
+			
+			// Buscar jugador
+			_player = GetTree().Root.GetNodeOrNull<Player>("Main/Player");
+			
 			GameEventBus.Instance.EmitLevelStarted(CurrentLevel);
 			GameEventBus.Instance.EmitGameStateChanged(CurrentState);
 			
-			GD.Print("Juego iniciado - Nivel ", CurrentLevel);
+			GD.Print($"Juego iniciado - {Lives} vidas");
 		}
 
 		public void PauseGame()
@@ -100,33 +121,61 @@ namespace CyberSecurityGame.Core
 			CurrentState = GameState.GameOver;
 			GameEventBus.Instance.EmitGameStateChanged(CurrentState);
 			GD.Print("Game Over - Puntuación final: ", Score);
-			// Aquí se podría guardar high scores, etc.
 		}
 
+		// Control de frecuencia de tips para no saturar
+		private float _tipCooldown = 0f;
+		private const float TIP_COOLDOWN_TIME = 8.0f; // Mínimo 8 segundos entre tips
+		private string _lastTipType = "";
+		
 		private void HandleEnemyDefeated(string enemyType, int points)
 		{
 			AddScore(points);
 			
-			// Mensaje educativo basado en el tipo de enemigo
-			string tip = GetSecurityTipForEnemy(enemyType);
-			if (!string.IsNullOrEmpty(tip))
+			// Solo mostrar tip si ha pasado suficiente tiempo y es un tipo diferente
+			if (_tipCooldown <= 0 && enemyType != _lastTipType)
 			{
-				GameEventBus.Instance.EmitSecurityTipShown(tip);
+				string tip = GetSecurityTipForEnemy(enemyType);
+				if (!string.IsNullOrEmpty(tip))
+				{
+					GameEventBus.Instance.EmitSecurityTipShown(tip);
+					_tipCooldown = TIP_COOLDOWN_TIME;
+					_lastTipType = enemyType;
+				}
 			}
 		}
 
 		private void HandlePlayerDeath()
 		{
+			Lives--;
+			Deaths++;  // Incrementar contador de muertes para estadísticas
 			_playerModel.LoseLife();
 			
-			if (_playerModel.Lives <= 0)
+			GD.Print($"💀 Jugador murió - Vidas restantes: {Lives} (Muertes totales: {Deaths})");
+			
+			if (Lives <= 0)
 			{
+				GD.Print("☠️ GAME OVER - Sin vidas");
 				GameOver();
 			}
 			else
 			{
 				// Respawn del jugador
-				GD.Print("Vidas restantes: ", _playerModel.Lives);
+				GD.Print($"🔄 Respawning... ({Lives} vidas)");
+				
+				// Buscar jugador y hacer respawn
+				if (_player == null || !IsInstanceValid(_player))
+				{
+					_player = GetTree().Root.GetNodeOrNull<Player>("Main/Player");
+				}
+				
+				if (_player != null)
+				{
+					_player.Respawn();
+				}
+				
+				// Limpiar balas para dar respiro
+				Systems.BulletHellSystem.Instance?.ClearAllBullets();
 			}
 		}
 
@@ -157,6 +206,17 @@ namespace CyberSecurityGame.Core
 		{
 			Score += points;
 			GameEventBus.Instance.EmitScoreChanged(Score);
+		}
+		
+		/// <summary>
+		/// Añade una vida extra al jugador
+		/// BALANCE: Se gana cada 10 oleadas sobrevividas
+		/// </summary>
+		public void AddLife()
+		{
+			Lives++;
+			_playerModel.AddLife();
+			GD.Print($"💚 +1 Vida! Total: {Lives}");
 		}
 
 		private string GetSecurityTipForEnemy(string enemyType)
