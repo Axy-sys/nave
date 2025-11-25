@@ -20,7 +20,7 @@ namespace CyberSecurityGame.Entities
 
 		// Configuración -----------> VELOCIDAD AUMENTADA
 		[Export] public float MaxHealth = 100f;
-		[Export] public float Speed = 55awwwwwwwwwwwwwwwww0f; // AUMENTADO
+		[Export] public float Speed = 550f; // AUMENTADO
 
 		public override void _Ready()
 		{
