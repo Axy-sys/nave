@@ -1,4 +1,4 @@
-using Godot;
+using Godot; 
 using CyberSecurityGame.Components;
 using CyberSecurityGame.Weapons;
 using CyberSecurityGame.Core.Events;
@@ -18,9 +18,9 @@ namespace CyberSecurityGame.Entities
 		private ShieldComponent _shieldComponent;
 		private CpuComponent _cpuComponent;
 
-		// Configuración
+		// Configuración -----------> VELOCIDAD AUMENTADA
 		[Export] public float MaxHealth = 100f;
-		[Export] public float Speed = 400f;
+		[Export] public float Speed = 55awwwwwwwwwwwwwwwww0f; // AUMENTADO
 
 		public override void _Ready()
 		{
@@ -82,8 +82,8 @@ namespace CyberSecurityGame.Entities
 				_weaponComponent.FireRate = 0.15f;
 			}
 			_weaponComponent.Initialize(this);
-			
-			// Equipar arma adaptativa por defecto
+
+			// Equipar arma adaptativa
 			_weaponComponent.SetWeapon(new AdaptiveWeapon());
 
 			_shieldComponent = GetNodeOrNull<ShieldComponent>("ShieldComponent");
@@ -119,11 +119,9 @@ namespace CyberSecurityGame.Entities
 
 		private void SetupCollision()
 		{
-			// Verificar si ya existe CollisionShape2D en la escena
 			var existingCollision = GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
 			if (existingCollision == null)
 			{
-				// Configurar colisión solo si no existe
 				var collisionShape = new CollisionShape2D();
 				var shape = new CircleShape2D();
 				shape.Radius = 20f;
@@ -136,19 +134,19 @@ namespace CyberSecurityGame.Entities
 		public override void _Process(double delta){
 			HandleInput(delta);
 			UpdateComponents(delta);
-			
 			RotateTowardsMouse();
-			}
+		}
+
 		private void RotateTowardsMouse(){
 			Vector2 dir = GetGlobalMousePosition() - GlobalPosition;
-			Rotation = dir.Angle() + Mathf.Pi / 2; // Corrige 90°
+			Rotation = dir.Angle() + Mathf.Pi / 2;
 		}
 
 		private Vector2 GetFireDirection()
 		{
-			// Apuntar hacia el mouse para mayor intuición
 			return (GetGlobalMousePosition() - GlobalPosition).Normalized();
 		}
+
 private void HandleInput(double delta)
 {
 	Vector2 inputDirection = Vector2.Zero;
@@ -164,16 +162,16 @@ private void HandleInput(double delta)
 
 	inputDirection = inputDirection.Normalized();
 
-	// ► FORWARD REAL según rotación (la nave apunta hacia ARRIBA del sprite)
 	Vector2 forward = Vector2.Up.Rotated(Rotation);
-
-	// ► RIGHT perpendicular al forward
 	Vector2 right = forward.Rotated(Mathf.Pi / 2);
 
-	// Movimiento WASD correcto
 	Vector2 moveDir =
-		forward * (-inputDirection.Y) +   // Y negativo porque W es -1 pero forward es UP
+		forward * (-inputDirection.Y) +
 		right * inputDirection.X;
+
+	// -----> BOOST DE VELOCIDAD (nuevo)
+	float boost = Input.IsKeyPressed(Key.Shift) ? 1.7f : 1.0f;
+	_movementComponent.Speed = Speed * boost;
 
 	_movementComponent?.Move(moveDir, delta);
 
@@ -215,17 +213,11 @@ private void HandleInput(double delta)
 
 		public void TakeDamage(float amount, Core.Interfaces.DamageType damageType)
 		{
-			// El escudo absorbe primero
 			if (_shieldComponent != null && _shieldComponent.IsActive())
-			{
 				amount = _shieldComponent.AbsorbDamage(amount);
-			}
 
-			// El daño restante va a la salud
 			if (amount > 0)
-			{
 				_healthComponent?.TakeDamage(amount, damageType);
-			}
 		}
 
 		public void ActivateShield(ShieldType type, float strength)
