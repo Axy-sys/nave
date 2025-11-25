@@ -52,6 +52,13 @@ namespace CyberSecurityGame.Components
 			if (IsPlayer)
 			{
 				GameEventBus.Instance.EmitPlayerHealthChanged(_currentHealth);
+				
+				// Emitir evento de daño por tipo de enemigo para tips contextuales
+				string enemyType = DamageTypeToEnemyType(damageType);
+				if (!string.IsNullOrEmpty(enemyType))
+				{
+					GameEventBus.Instance.EmitPlayerDamagedByEnemy(enemyType, actualDamage);
+				}
 			}
 
 			if (_currentHealth <= 0)
@@ -61,6 +68,19 @@ namespace CyberSecurityGame.Components
 
 			// Log educativo del tipo de daño recibido
 			LogDamageType(damageType, actualDamage);
+		}
+
+		private string DamageTypeToEnemyType(DamageType damageType)
+		{
+			return damageType switch
+			{
+				DamageType.Malware => "Malware",
+				DamageType.DDoS => "DDoS",
+				DamageType.Phishing => "Phishing",
+				DamageType.BruteForce => "BruteForce",
+				DamageType.SQLInjection => "SQLInjection",
+				_ => ""
+			};
 		}
 
 		public float GetCurrentHealth() => _currentHealth;

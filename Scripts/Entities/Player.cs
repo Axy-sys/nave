@@ -177,7 +177,9 @@ private void HandleInput(double delta)
 
 	_movementComponent?.Move(moveDir, delta);
 
-	// Dash
+	// ═══════════════════════════════════════════════════════════
+	// DASH - Solo con SPACE (NO dispara)
+	// ═══════════════════════════════════════════════════════════
 	if (Input.IsKeyPressed(Key.Space))
 	{
 		if (_movementComponent != null && _movementComponent.TryDash(moveDir))
@@ -185,9 +187,13 @@ private void HandleInput(double delta)
 			Modulate = new Color(0, 1, 1, 0.5f);
 			GetTree().CreateTimer(0.2f).Timeout += () => Modulate = Colors.White;
 		}
+		// IMPORTANTE: Salir para NO disparar cuando hacemos dash
+		return;
 	}
 
-	// Parry
+	// ═══════════════════════════════════════════════════════════
+	// PARRY - Solo con SHIFT
+	// ═══════════════════════════════════════════════════════════
 	if (Input.IsKeyPressed(Key.Shift))
 	{
 		if (_shieldComponent != null && _shieldComponent.TriggerParry())
@@ -197,12 +203,20 @@ private void HandleInput(double delta)
 		}
 	}
 
-	// Disparo
-	if (Input.IsActionPressed("fire"))
+	// ═══════════════════════════════════════════════════════════
+	// DISPARO - Solo con CLICK IZQUIERDO (no SPACE, no E)
+	// Nota: "fire" en project.godot incluye SPACE, pero lo ignoramos aquí
+	// ═══════════════════════════════════════════════════════════
+	if (Input.IsMouseButtonPressed(MouseButton.Left))
 	{
 		Vector2 fireDirection = GetFireDirection();
 		_weaponComponent?.TryFire(fireDirection);
 	}
+	
+	// ═══════════════════════════════════════════════════════════
+	// E = INTERACCIÓN (DataNode, LoreTerminal) - Manejado por esos scripts
+	// No hacer nada aquí, ellos leen Input.IsKeyPressed(Key.E)
+	// ═══════════════════════════════════════════════════════════
 }
 
 		private void UpdateComponents(double delta)

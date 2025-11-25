@@ -1,102 +1,27 @@
-[gd_scene load_steps=9 format=3 uid="uid://c03olrtw2cevg"]
+[gd_scene load_steps=5 format=3 uid="uid://c03olrtw2cevg"]
 
 [ext_resource type="Script" uid="uid://d2jba05kgfr48" path="res://Scripts/UI/MainMenu.cs" id="1_script"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
-bg_color = Color(0, 0.4, 0.5, 0.8)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0, 1, 1, 1)
-corner_radius_top_left = 50
-corner_radius_top_right = 50
-corner_radius_bottom_right = 50
-corner_radius_bottom_left = 50
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.02, 0.02, 0.05, 1)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
-bg_color = Color(0, 1, 1, 0.3)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0, 1, 1, 1)
-corner_radius_top_left = 50
-corner_radius_top_right = 50
-corner_radius_bottom_right = 50
-corner_radius_bottom_left = 50
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0, 0.15, 0.1, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 1, 0.5, 0.8)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
-bg_color = Color(0, 0.6, 0.7, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0, 1, 1, 1)
-corner_radius_top_left = 50
-corner_radius_top_right = 50
-corner_radius_bottom_right = 50
-corner_radius_bottom_left = 50
-shadow_color = Color(0, 1, 1, 0.5)
-shadow_size = 5
-
-[sub_resource type="Animation" id="Animation_button_pulse"]
-resource_name = "button_pulse"
-length = 1.5
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:scale")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.75, 1.5),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1)]
-}
-
-[sub_resource type="Animation" id="Animation_stars"]
-resource_name = "stars"
-length = 5.0
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Background/Stars:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 5),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector2(0, 0), Vector2(0, 50)]
-}
-
-[sub_resource type="Animation" id="Animation_title_glow"]
-resource_name = "title_glow"
-length = 2.0
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("UI/TitleContainer/Title:modulate")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1, 2),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Color(0, 1, 1, 1), Color(0.4, 1, 0.8, 1), Color(0, 1, 1, 1)]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_main"]
-_data = {
-&"button_pulse": SubResource("Animation_button_pulse"),
-&"stars": SubResource("Animation_stars"),
-&"title_glow": SubResource("Animation_title_glow")
-}
+bg_color = Color(0, 0.3, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 1, 0.5, 1)
+shadow_color = Color(0, 1, 0.5, 0.3)
+shadow_size = 4
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -107,178 +32,132 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="Panel" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -5.0
-offset_top = 2.0
-offset_right = -5.0
-offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0.05, 0.1, 1)
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
-[node name="Stars" type="Node2D" parent="Background"]
+[node name="Scanlines" type="ColorRect" parent="Background"]
+modulate = Color(1, 1, 1, 0.03)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
 
-[node name="Star1" type="Polygon2D" parent="Background/Stars"]
-position = Vector2(100, 80)
-color = Color(0, 0.8, 1, 0.6)
-polygon = PackedVector2Array(-2, 0, 0, -2, 2, 0, 0, 2)
-
-[node name="Star2" type="Polygon2D" parent="Background/Stars"]
-position = Vector2(300, 150)
-color = Color(0, 0.8, 1, 0.4)
-polygon = PackedVector2Array(-1.5, 0, 0, -1.5, 1.5, 0, 0, 1.5)
-
-[node name="Star3" type="Polygon2D" parent="Background/Stars"]
-position = Vector2(500, 100)
-color = Color(0, 0.8, 1, 0.7)
-polygon = PackedVector2Array(-2, 0, 0, -2, 2, 0, 0, 2)
-
-[node name="Star4" type="Polygon2D" parent="Background/Stars"]
-position = Vector2(800, 200)
-color = Color(0, 0.8, 1, 0.5)
-polygon = PackedVector2Array(-1.5, 0, 0, -1.5, 1.5, 0, 0, 1.5)
-
-[node name="Star5" type="Polygon2D" parent="Background/Stars"]
-position = Vector2(1000, 120)
-color = Color(0, 0.8, 1, 0.6)
-polygon = PackedVector2Array(-2, 0, 0, -2, 2, 0, 0, 2)
-
-[node name="Star6" type="Polygon2D" parent="Background/Stars"]
-position = Vector2(200, 400)
-color = Color(0, 0.8, 1, 0.5)
-polygon = PackedVector2Array(-1.5, 0, 0, -1.5, 1.5, 0, 0, 1.5)
-
-[node name="Star7" type="Polygon2D" parent="Background/Stars"]
-position = Vector2(600, 450)
-color = Color(0, 0.8, 1, 0.7)
-polygon = PackedVector2Array(-2, 0, 0, -2, 2, 0, 0, 2)
-
-[node name="Star8" type="Polygon2D" parent="Background/Stars"]
-position = Vector2(900, 500)
-color = Color(0, 0.8, 1, 0.4)
-polygon = PackedVector2Array(-1.5, 0, 0, -1.5, 1.5, 0, 0, 1.5)
-
-[node name="UI" type="VBoxContainer" parent="."]
+[node name="TerminalContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -300.0
-offset_right = 250.0
-offset_bottom = 300.0
+offset_left = -350.0
+offset_top = -250.0
+offset_right = 350.0
+offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 10
 
-[node name="TitleContainer" type="VBoxContainer" parent="UI"]
+[node name="TerminalHeader" type="Label" parent="TerminalContainer"]
 layout_mode = 2
-size_flags_vertical = 3
-alignment = 1
+theme_override_colors/font_color = Color(0, 0.8, 0.4, 0.7)
+theme_override_font_sizes/font_size = 14
+text = "┌─ TERMINAL v2.4.1 ─ Code Rippier Systems ─────────────────────┐"
 
-[node name="Spacer1" type="Control" parent="UI/TitleContainer"]
-visible = false
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-
-[node name="Title" type="Label" parent="UI/TitleContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0, 1, 1, 0.5)
-theme_override_constants/shadow_offset_x = 0
-theme_override_constants/shadow_offset_y = 0
-theme_override_constants/shadow_outline_size = 15
-theme_override_font_sizes/font_size = 64
-text = "🛡️ CyberSoul"
-horizontal_alignment = 1
-
-[node name="Subtitle" type="Label" parent="UI/TitleContainer"]
+[node name="TerminalOutput" type="Label" parent="TerminalContainer"]
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 1, 0.5, 1)
-theme_override_font_sizes/font_size = 42
-text = "Guardian del Código"
-horizontal_alignment = 1
-
-[node name="Tagline" type="Label" parent="UI/TitleContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "Aprende Ciberseguridad Mientras Juegas"
-horizontal_alignment = 1
+text = ""
+autowrap_mode = 3
 
-[node name="Spacer2" type="Control" parent="UI/TitleContainer"]
+[node name="Cursor" type="Label" parent="TerminalContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 18
+text = "█"
+
+[node name="MenuOptions" type="VBoxContainer" parent="TerminalContainer"]
 visible = false
-custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
+theme_override_constants/separation = 12
 
-[node name="MenuButtons" type="VBoxContainer" parent="UI"]
+[node name="PlayButton" type="Button" parent="TerminalContainer/MenuOptions"]
+custom_minimum_size = Vector2(300, 50)
 layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="PlayButton" type="Button" parent="UI/MenuButtons"]
-custom_minimum_size = Vector2(400, 70)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0, 1, 0.5, 1)
+theme_override_colors/font_hover_color = Color(0.5, 1, 0.8, 1)
+theme_override_colors/font_focus_color = Color(0.5, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-text = "▶ JUGAR"
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+text = "[1] > INICIAR MISIÓN"
 
-[node name="TutorialButton" type="Button" parent="UI/MenuButtons"]
-custom_minimum_size = Vector2(400, 70)
+[node name="RecordsButton" type="Button" parent="TerminalContainer/MenuOptions"]
+custom_minimum_size = Vector2(300, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 0.8, 0, 1)
+theme_override_colors/font_hover_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_focus_color = Color(1, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-text = "📖 TUTORIAL"
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+text = "[2] > RÉCORDS"
 
-[node name="OptionsButton" type="Button" parent="UI/MenuButtons"]
-custom_minimum_size = Vector2(400, 70)
+[node name="TutorialButton" type="Button" parent="TerminalContainer/MenuOptions"]
+custom_minimum_size = Vector2(300, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0, 1, 0.5, 1)
+theme_override_colors/font_hover_color = Color(0.5, 1, 0.8, 1)
+theme_override_colors/font_focus_color = Color(0.5, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-text = "⚙️ OPCIONES"
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+text = "[3] > TUTORIAL"
 
-[node name="QuitButton" type="Button" parent="UI/MenuButtons"]
-custom_minimum_size = Vector2(400, 70)
+[node name="QuitButton" type="Button" parent="TerminalContainer/MenuOptions"]
+custom_minimum_size = Vector2(300, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(1, 0.3, 0.3, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_colors/font_hover_color = Color(1, 0.5, 0.5, 1)
+theme_override_colors/font_focus_color = Color(1, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-text = "❌ SALIR"
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+text = "[ESC] > SALIR"
 
-[node name="Version" type="Label" parent="UI"]
+[node name="TerminalFooter" type="Label" parent="TerminalContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.7, 0.8, 0.7)
+theme_override_colors/font_color = Color(0, 0.8, 0.4, 0.7)
 theme_override_font_sizes/font_size = 14
-text = "v1.0.0 - Desarrollado con Godot 4.x + C#"
-horizontal_alignment = 1
+text = "└──────────────────────────────────────────────────────────────┘"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_main")
-}
-autoplay = "title_glow"
-
-[connection signal="pressed" from="UI/MenuButtons/PlayButton" to="." method="_on_play_button_pressed"]
-[connection signal="pressed" from="UI/MenuButtons/TutorialButton" to="." method="_on_tutorial_button_pressed"]
-[connection signal="pressed" from="UI/MenuButtons/OptionsButton" to="." method="_on_options_button_pressed"]
-[connection signal="pressed" from="UI/MenuButtons/QuitButton" to="." method="_on_quit_button_pressed"]
+[node name="VersionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -30.0
+offset_right = 300.0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0, 0.6, 0.3, 0.5)
+theme_override_font_sizes/font_size = 12
+text = "CyberSecurity Defender v1.0 | Godot 4.x + C#"
