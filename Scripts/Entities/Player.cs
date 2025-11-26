@@ -17,6 +17,7 @@ namespace CyberSecurityGame.Entities
 		private WeaponComponent _weaponComponent;
 		private ShieldComponent _shieldComponent;
 		private CpuComponent _cpuComponent;
+	
 
 		// Configuración -----------> VELOCIDAD AUMENTADA
 		[Export] public float MaxHealth = 100f;
@@ -30,6 +31,9 @@ namespace CyberSecurityGame.Entities
 		private const float INVINCIBILITY_DURATION = 3.5f; // Aumentado de 2.5s para dar más margen
 		private Vector2 _spawnPosition;
 		private bool _isRespawning = false;
+		private Vector2 _lastMousePos;
+		private bool _mouseMoved = false;
+		
 
 		public override void _Ready()
 		{
@@ -46,6 +50,8 @@ namespace CyberSecurityGame.Entities
 			// BALANCE ARCADE: Jugador pequeño y ágil
 			// Hitbox más pequeño = más fácil esquivar balas (bullet hell)
 			Scale = new Vector2(0.6f, 0.6f);
+			GetNode<Button>("NombreDelBoton").GrabFocus();
+			
 		}
 
 		private void InitializeComponents()
@@ -160,21 +166,54 @@ namespace CyberSecurityGame.Entities
 			}
 		}
 		
-		public override void _Process(double delta){
-			// No procesar si está respawneando
-			if (_isRespawning) return;
-			
-			HandleInput(delta);
-			UpdateComponents(delta);
-			UpdateInvincibility((float)delta);
-			
-			// Apuntar con el mouse
-			LookAt(GetGlobalMousePosition());
-			
-			// BULLET HELL: Limitar posición al área de juego
-			ClampToPlayArea();
+public override void _Process(double delta)
+	{
+		if (_isRespawning) return;
+
+		HandleInput(delta);
+		UpdateComponents(delta);
+		UpdateInvincibility((float)delta);
+
+		// ---------------------------------------------------------
+		// 1. Detectar si el mouse se está moviendo
+		// ---------------------------------------------------------
+		Vector2 currentMousePos = GetGlobalMousePosition();
+		_mouseMoved = (currentMousePos - _lastMousePos).LengthSquared() > 4f;
+		_lastMousePos = currentMousePos;
+
+		// ---------------------------------------------------------
+		// 2. Leer stick derecho
+		// ---------------------------------------------------------
+		float ax = Input.GetActionStrength("aim_right") - Input.GetActionStrength("aim_left");
+		float ay = Input.GetActionStrength("aim_down") - Input.GetActionStrength("aim_up");
+		Vector2 aim = new Vector2(ax, ay);
+
+		bool stickActive = aim.LengthSquared() > 0.04f;
+
+		// ---------------------------------------------------------
+		// 3. Prioridad del stick sobre el mouse
+		// ---------------------------------------------------------
+		if (stickActive)
+		{
+			Vector2 virtualCursor = GlobalPosition + aim.Normalized() * 500f;
+			LookAt(virtualCursor);
 		}
-		
+		else if (_mouseMoved)
+		{
+			LookAt(currentMousePos);
+		}
+
+		// Mantener dentro del área de juego
+		ClampToPlayArea();
+
+		// Detectar botones presionados continuamente
+	
+	}
+
+	// ==================================================================
+	//  PULSO ÚNICO (X, O, ▢, △) — ideal para disparos / menú
+	// ==================================================================
+
 		/// <summary>
 		/// Limita la posición del jugador al área de juego visible
 		/// </summary>
@@ -217,11 +256,31 @@ private void HandleInput(double delta)
 	// 🕹️ MOVIMIENTO 8 DIRECCIONES
 	// ─────────────────────────────────────────────────────────────
 	Vector2 inputDir = Vector2.Zero;
+
+// --- WASD ---
+if (Input.IsActionPressed("move_up"))    inputDir.Y -= 1f;
+if (Input.IsActionPressed("move_down"))  inputDir.Y += 1f;
+if (Input.IsActionPressed("move_left"))  inputDir.X -= 1f;
+if (Input.IsActionPressed("move_right")) inputDir.X += 1f;
+
+// --- CONTROL PS4 ---
+// Usamos get_action_strength() para leer ejes analógicos
+float joyX = Input.GetActionStrength("move_right") - Input.GetActionStrength("move_left");
+float joyY = Input.GetActionStrength("move_down")  - Input.GetActionStrength("move_up");
+
+// Mezclar teclado con joystick (si el joystick se mueve más, domina)
+Vector2 joyVector = new Vector2(joyX, joyY);
+
+if (joyVector.Length() > inputDir.Length())
+	inputDir = joyVector;
+
+// Normalización opcional
+
+if (inputDir.Length() > 1f)
+	inputDir = inputDir.Normalized();
 	
-	if (Input.IsActionPressed("move_up"))    inputDir.Y -= 1;
-	if (Input.IsActionPressed("move_down"))  inputDir.Y += 1;
-	if (Input.IsActionPressed("move_left"))  inputDir.X -= 1;
-	if (Input.IsActionPressed("move_right")) inputDir.X += 1;
+if (Input.IsActionJustPressed("fire"))
+	FireAtMouse();	
 	
 	// ─────────────────────────────────────────────────────────────
 	// ⚡ TURBO (Shift)
