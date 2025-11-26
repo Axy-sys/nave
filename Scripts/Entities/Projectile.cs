@@ -86,13 +86,13 @@ namespace CyberSecurityGame.Entities
 
 			// Verificar si es un enemigo - múltiples formas de detectar
 			bool isEnemy = body.IsInGroup("Enemy") || 
-			               body.Name.ToString().Contains("Enemy") ||
-			               body.Name.ToString().Contains("Malware") ||
-			               body.Name.ToString().Contains("Phishing") ||
-			               body.Name.ToString().Contains("DDoS") ||
-			               body.Name.ToString().Contains("Ransomware") ||
-			               body.Name.ToString().Contains("SQL") ||
-			               body.Name.ToString().Contains("Brute");
+						   body.Name.ToString().Contains("Enemy") ||
+						   body.Name.ToString().Contains("Malware") ||
+						   body.Name.ToString().Contains("Phishing") ||
+						   body.Name.ToString().Contains("DDoS") ||
+						   body.Name.ToString().Contains("Ransomware") ||
+						   body.Name.ToString().Contains("SQL") ||
+						   body.Name.ToString().Contains("Brute");
 
 			if (isEnemy)
 			{
