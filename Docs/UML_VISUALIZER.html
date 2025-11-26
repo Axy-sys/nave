@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Rippier - Visualizador UML</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-card: #161616;
+            --accent-green: #00ff88;
+            --accent-purple: #a855f7;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-color: #2a2a2a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header h1 span {
+            color: var(--accent-purple);
+        }
+
+        .header h1 em {
+            color: var(--accent-green);
+            font-style: normal;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-green);
+            color: #000;
+            border-color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .diagram-section {
+            display: none;
+        }
+
+        .diagram-section.active {
+            display: block;
+        }
+
+        .diagram-header {
+            margin-bottom: 2rem;
+        }
+
+        .diagram-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .diagram-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .diagram-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .diagram-image {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .diagram-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .diagram-image .placeholder {
+            background: #1a1a2e;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .diagram-image .placeholder code {
+            display: block;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--accent-green);
+        }
+
+        .explanation {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .explanation h3 {
+            color: var(--accent-green);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .explanation h4 {
+            color: var(--accent-purple);
+            margin: 1.5rem 0 0.75rem;
+            font-size: 1rem;
+        }
+
+        .explanation p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .explanation ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .explanation li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .explanation li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-green);
+        }
+
+        .code-block {
+            background: #0d0d0d;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .code-block .keyword {
+            color: var(--accent-purple);
+        }
+
+        .code-block .class {
+            color: var(--accent-green);
+        }
+
+        .code-block .comment {
+            color: #666;
+        }
+
+        .key-point {
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 4px solid var(--accent-green);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .key-point strong {
+            color: var(--accent-green);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        .pattern-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--accent-purple);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+
+        .footer a {
+            color: var(--accent-green);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 968px) {
+            .diagram-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .plantuml-link {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--accent-purple);
+            color: #fff;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .plantuml-link:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1><span>Code</span> <em>Rippier</em></h1>
+        <p>Visualizador de Arquitectura UML - Guía de Exposición</p>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="showDiagram('overview')">🏠 Resumen</button>
+        <button class="tab-btn" onclick="showDiagram('mvc')">📊 MVC Pattern</button>
+        <button class="tab-btn" onclick="showDiagram('component')">🧩 Component</button>
+        <button class="tab-btn" onclick="showDiagram('strategy')">⚔️ Strategy</button>
+        <button class="tab-btn" onclick="showDiagram('observer')">📡 Observer + Factory</button>
+        <button class="tab-btn" onclick="showDiagram('complete')">🏗️ Arquitectura Completa</button>
+    </nav>
+
+    <main class="content">
+        <!-- OVERVIEW -->
+        <section id="overview" class="diagram-section active">
+            <div class="diagram-header">
+                <h2>🎮 Code Rippier - Resumen de Arquitectura</h2>
+                <p>Patrones de diseño implementados en el proyecto</p>
+            </div>
+
+            <div class="diagram-content">
+                <div class="explanation" style="grid-column: span 2;">
+                    <h3>Patrones de Diseño Implementados</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                        <div class="key-point">
+                            <strong>📊 MVC (Model-View-Controller)</strong>
+                            <p>Separa datos, lógica y presentación. GameManager coordina todo.</p>
+                        </div>
+                        <div class="key-point">
+                            <strong>🧩 Component Pattern</strong>
+                            <p>Player compuesto de Health, Movement, Weapon, Shield components.</p>
+                        </div>
+                        <div class="key-point">
+                            <strong>⚔️ Strategy Pattern</strong>
+                            <p>Armas y AI intercambiables en tiempo de ejecución.</p>
+                        </div>
+                        <div class="key-point">
+                            <strong>📡 Observer Pattern</strong>
+                            <p>EventBus para comunicación desacoplada entre sistemas.</p>
+                        </div>
+                        <div class="key-point">
+                            <strong>🏭 Factory Pattern</strong>
+                            <p>EnemyFactory centraliza la creación de 10 tipos de enemigos.</p>
+                        </div>
+                        <div class="key-point">
+                            <strong>🔒 Singleton Pattern</strong>
+                            <p>GameManager, QuizSystem, SecurityTipsSystem - instancias únicas.</p>
+                        </div>
+                    </div>
+
+                    <h4>Principios SOLID Aplicados</h4>
+                    <table>
+                        <tr>
+                            <th>Principio</th>
+                            <th>Aplicación en Code Rippier</th>
+                        </tr>
+                        <tr>
+                            <td><strong>S</strong>ingle Responsibility</td>
+                            <td>Cada componente tiene una única responsabilidad</td>
+                        </tr>
+                        <tr>
+                            <td><strong>O</strong>pen/Closed</td>
+                            <td>Nuevas armas sin modificar código existente (IWeapon)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>L</strong>iskov Substitution</td>
+                            <td>Cualquier IWeapon funciona en WeaponComponent</td>
+                        </tr>
+                        <tr>
+                            <td><strong>I</strong>nterface Segregation</td>
+                            <td>Interfaces pequeñas: IComponent, IWeapon, IDamageable</td>
+                        </tr>
+                        <tr>
+                            <td><strong>D</strong>ependency Inversion</td>
+                            <td>Dependencias hacia abstracciones, no implementaciones</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- MVC PATTERN -->
+        <section id="mvc" class="diagram-section">
+            <div class="diagram-header">
+                <h2>📊 MVC Pattern - Model View Controller</h2>
+                <p>Separación de responsabilidades en tres capas</p>
+            </div>
+
+            <div class="diagram-content">
+                <div class="diagram-image">
+                    <div class="placeholder">
+                        <p>📊 Diagrama MVC</p>
+                        <p>Archivo: <code>Docs/diagrams/1-mvc-pattern.puml</code></p>
+                        <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
+                            Abrir en PlantUML Online →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="explanation">
+                    <h3>🎯 Qué decir en la exposición:</h3>
+                    
+                    <p>"Implementamos MVC para separar responsabilidades:"</p>
+
+                    <h4>Model (Modelo)</h4>
+                    <ul>
+                        <li><strong>GameStateModel:</strong> Score, Level, Difficulty, Estado actual</li>
+                        <li><strong>PlayerModel:</strong> Vidas, Arma actual, PowerUps</li>
+                        <li>Solo contiene datos, sin lógica de UI</li>
+                    </ul>
+
+                    <h4>View (Vista)</h4>
+                    <ul>
+                        <li><strong>GameHUD:</strong> Muestra score, vida, arma, oleada</li>
+                        <li><strong>QuizView:</strong> Panel de preguntas educativas</li>
+                        <li>Solo visualización, sin lógica de negocio</li>
+                    </ul>
+
+                    <h4>Controller (Controlador)</h4>
+                    <ul>
+                        <li><strong>GameManager:</strong> Coordina Model y View</li>
+                        <li>Maneja StartGame(), PauseGame(), GameOver()</li>
+                        <li>Responde a eventos del juego</li>
+                    </ul>
+
+                    <div class="key-point">
+                        <strong>💡 Punto clave:</strong> "Si cambiamos la UI (View), no tocamos la lógica (Controller). Si cambiamos cómo se calcula el score (Model), la UI sigue funcionando."
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COMPONENT PATTERN -->
+        <section id="component" class="diagram-section">
+            <div class="diagram-header">
+                <h2>🧩 Component Pattern - Composición sobre Herencia</h2>
+                <p>Entidades construidas a partir de componentes reutilizables</p>
+            </div>
+
+            <div class="diagram-content">
+                <div class="diagram-image">
+                    <div class="placeholder">
+                        <p>🧩 Diagrama Component Pattern</p>
+                        <p>Archivo: <code>Docs/diagrams/2-component-pattern.puml</code></p>
+                        <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
+                            Abrir en PlantUML Online →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="explanation">
+                    <h3>🎯 Qué decir en la exposición:</h3>
+                    
+                    <p>"En vez de una clase Player monolítica con miles de líneas, usamos composición:"</p>
+
+                    <div class="code-block">
+<span class="keyword">class</span> <span class="class">Player</span> {
+    <span class="comment">// Componentes independientes</span>
+    <span class="class">HealthComponent</span> _health;     <span class="comment">// Vida y daño</span>
+    <span class="class">MovementComponent</span> _movement; <span class="comment">// Movimiento</span>
+    <span class="class">WeaponComponent</span> _weapon;     <span class="comment">// Armas</span>
+    <span class="class">ShieldComponent</span> _shield;     <span class="comment">// Escudo</span>
+}
+                    </div>
+
+                    <h4>Componentes Implementados</h4>
+                    <table>
+                        <tr>
+                            <th>Componente</th>
+                            <th>Responsabilidad</th>
+                        </tr>
+                        <tr>
+                            <td>HealthComponent</td>
+                            <td>TakeDamage(), Heal(), CurrentHealth</td>
+                        </tr>
+                        <tr>
+                            <td>MovementComponent</td>
+                            <td>Move(), Speed, UseAcceleration</td>
+                        </tr>
+                        <tr>
+                            <td>WeaponComponent</td>
+                            <td>SetWeapon(), TryFire(), FireRate</td>
+                        </tr>
+                        <tr>
+                            <td>ShieldComponent</td>
+                            <td>ActivateShield(), AbsorbDamage()</td>
+                        </tr>
+                    </table>
+
+                    <div class="key-point">
+                        <strong>💡 Punto clave:</strong> "Si queremos un enemigo con escudo, solo le agregamos ShieldComponent. No hay herencia compleja ni código duplicado. Esto es el principio 'Composition over Inheritance'."
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STRATEGY PATTERN -->
+        <section id="strategy" class="diagram-section">
+            <div class="diagram-header">
+                <h2>⚔️ Strategy Pattern - Algoritmos Intercambiables</h2>
+                <p>Armas y comportamientos de IA que se pueden cambiar en runtime</p>
+            </div>
+
+            <div class="diagram-content">
+                <div class="diagram-image">
+                    <div class="placeholder">
+                        <p>⚔️ Diagrama Strategy Pattern</p>
+                        <p>Archivo: <code>Docs/diagrams/3-strategy-pattern.puml</code></p>
+                        <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
+                            Abrir en PlantUML Online →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="explanation">
+                    <h3>🎯 Qué decir en la exposición:</h3>
+                    
+                    <p>"Strategy Pattern permite intercambiar algoritmos sin modificar el código que los usa."</p>
+
+                    <h4>Sistema de Armas (IWeapon)</h4>
+                    <table>
+                        <tr>
+                            <th>Arma</th>
+                            <th>Comportamiento</th>
+                            <th>Costo CPU</th>
+                        </tr>
+                        <tr>
+                            <td>FirewallWeapon</td>
+                            <td>Disparo básico</td>
+                            <td>5%</td>
+                        </tr>
+                        <tr>
+                            <td>AntivirusWeapon</td>
+                            <td>Ráfaga de 3 disparos</td>
+                            <td>15%</td>
+                        </tr>
+                        <tr>
+                            <td>EncryptionWeapon</td>
+                            <td>Alto daño penetrante</td>
+                            <td>25%</td>
+                        </tr>
+                        <tr>
+                            <td>HoneypotWeapon</td>
+                            <td>Trampa que atrae</td>
+                            <td>20%</td>
+                        </tr>
+                    </table>
+
+                    <h4>Sistema de IA Enemiga</h4>
+                    <table>
+                        <tr>
+                            <th>IA</th>
+                            <th>Comportamiento</th>
+                        </tr>
+                        <tr>
+                            <td>ChaseAI</td>
+                            <td>Persecución directa al jugador</td>
+                        </tr>
+                        <tr>
+                            <td>ZigZagAI</td>
+                            <td>Movimiento evasivo en zigzag</td>
+                        </tr>
+                        <tr>
+                            <td>CircleAI</td>
+                            <td>Rodea al jugador manteneniendo distancia</td>
+                        </tr>
+                    </table>
+
+                    <div class="key-point">
+                        <strong>💡 Punto clave:</strong> "Agregar una nueva arma es crear una clase que implemente IWeapon. No tocamos WeaponComponent ni Player. Esto es Open/Closed Principle: abierto para extensión, cerrado para modificación."
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- OBSERVER + FACTORY -->
+        <section id="observer" class="diagram-section">
+            <div class="diagram-header">
+                <h2>📡 Observer + Factory Pattern</h2>
+                <p>Comunicación desacoplada y creación centralizada de objetos</p>
+            </div>
+
+            <div class="diagram-content">
+                <div class="diagram-image">
+                    <div class="placeholder">
+                        <p>📡 Diagrama Observer + Factory</p>
+                        <p>Archivo: <code>Docs/diagrams/4-observer-factory.puml</code></p>
+                        <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
+                            Abrir en PlantUML Online →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="explanation">
+                    <h3>🎯 Qué decir en la exposición:</h3>
+                    
+                    <h4>Observer Pattern (EventBus)</h4>
+                    <p>"El EventBus permite comunicación sin dependencias directas:"</p>
+
+                    <div class="code-block">
+<span class="comment">// Publicar un evento</span>
+<span class="class">GameEventBus</span>.Instance.EnemyDefeated?.Invoke(enemy);
+
+<span class="comment">// Suscribirse (en GameHUD)</span>
+<span class="class">GameEventBus</span>.Instance.ScoreChanged += UpdateScore;
+                    </div>
+
+                    <p><strong>Eventos disponibles:</strong></p>
+                    <ul>
+                        <li>EnemySpawned, EnemyDefeated</li>
+                        <li>PlayerDamaged, ScoreChanged</li>
+                        <li>WaveStarted, PowerUpCollected</li>
+                        <li>QuizQuestionShown, SecurityTipShown</li>
+                    </ul>
+
+                    <h4>Factory Pattern (EnemyFactory)</h4>
+                    <div class="code-block">
+<span class="comment">// Crear enemigos de forma centralizada</span>
+<span class="keyword">var</span> phishing = <span class="class">EnemyFactory</span>.CreateEnemy(
+    <span class="class">EnemyType</span>.Phishing, position);
+
+<span class="keyword">var</span> ransomware = <span class="class">EnemyFactory</span>.CreateEnemy(
+    <span class="class">EnemyType</span>.Ransomware, position);
+                    </div>
+
+                    <p><strong>10 tipos de enemigos:</strong> Malware, Phishing, DDoS, SQLInjection, BruteForce, Ransomware, Trojan, Worm, Spyware, Adware</p>
+
+                    <div class="key-point">
+                        <strong>💡 Punto clave:</strong> "El HUD no conoce al Player directamente. Solo escucha eventos. Si cambio cómo funciona el daño, el HUD no se entera. Esto es Single Responsibility y desacoplamiento."
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COMPLETE ARCHITECTURE -->
+        <section id="complete" class="diagram-section">
+            <div class="diagram-header">
+                <h2>🏗️ Arquitectura Completa</h2>
+                <p>Vista general de todos los sistemas integrados</p>
+            </div>
+
+            <div class="diagram-content">
+                <div class="diagram-image">
+                    <div class="placeholder">
+                        <p>🏗️ Diagrama Arquitectura Completa</p>
+                        <p>Archivo: <code>Docs/diagrams/5-complete-architecture.puml</code></p>
+                        <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
+                            Abrir en PlantUML Online →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="explanation">
+                    <h3>🎯 Qué decir en la exposición:</h3>
+                    
+                    <p>"Este diagrama muestra cómo se integran todas las capas:"</p>
+
+                    <h4>Capas del Sistema</h4>
+                    <table>
+                        <tr>
+                            <th>Capa</th>
+                            <th>Contenido</th>
+                        </tr>
+                        <tr>
+                            <td>🎮 Core Layer</td>
+                            <td>GameManager, EventBus, Interfaces</td>
+                        </tr>
+                        <tr>
+                            <td>📊 Data Layer</td>
+                            <td>GameStateModel, PlayerModel</td>
+                        </tr>
+                        <tr>
+                            <td>🎨 Presentation</td>
+                            <td>GameHUD, QuizView</td>
+                        </tr>
+                        <tr>
+                            <td>🔧 Components</td>
+                            <td>Health, Movement, Weapon, Shield</td>
+                        </tr>
+                        <tr>
+                            <td>⚔️ Weapons</td>
+                            <td>Firewall, Antivirus, Encryption, Honeypot</td>
+                        </tr>
+                        <tr>
+                            <td>👾 Entities</td>
+                            <td>Player, Projectile, EnemyFactory</td>
+                        </tr>
+                        <tr>
+                            <td>🤖 AI</td>
+                            <td>ChaseAI, ZigZagAI, CircleAI</td>
+                        </tr>
+                        <tr>
+                            <td>📚 Education</td>
+                            <td>QuizSystem, SecurityTipsSystem</td>
+                        </tr>
+                    </table>
+
+                    <h4>Flujo de Datos</h4>
+                    <ol style="color: var(--text-secondary); padding-left: 1.5rem;">
+                        <li>MainScene inicializa todos los sistemas</li>
+                        <li>GameManager coordina el estado del juego</li>
+                        <li>Player usa Components para funcionalidad</li>
+                        <li>WaveSystem usa EnemyFactory para crear oleadas</li>
+                        <li>EventBus notifica cambios a las Views</li>
+                        <li>Education systems muestran contenido contextual</li>
+                    </ol>
+
+                    <div class="key-point">
+                        <strong>💡 Punto clave:</strong> "Esta arquitectura permite que el juego sea extensible. Agregar un nuevo sistema educativo o un nuevo tipo de enemigo es simple porque cada parte está bien definida y desacoplada."
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>
+            <strong>Code Rippier</strong> - CodeRippier Team © 2025<br>
+            <a href="https://axy-sys.github.io/nave/" target="_blank">Website</a> · 
+            <a href="https://github.com/Axy-sys/nave" target="_blank">GitHub</a>
+        </p>
+    </footer>
+
+    <script>
+        function showDiagram(id) {
+            // Hide all sections
+            document.querySelectorAll('.diagram-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(id).classList.add('active');
+            
+            // Activate button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
