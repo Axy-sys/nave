@@ -299,6 +299,75 @@
         .plantuml-link:hover {
             opacity: 0.9;
         }
+
+        .code-copy-container {
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            background: var(--accent-green);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        .copy-btn:hover {
+            opacity: 0.9;
+        }
+
+        .copy-btn.copied {
+            background: var(--accent-purple);
+            color: #fff;
+        }
+
+        .plantuml-code {
+            background: #0d0d0d;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.75rem;
+            overflow: auto;
+            max-height: 400px;
+            white-space: pre;
+            color: var(--text-secondary);
+        }
+
+        .toggle-code-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .toggle-code-btn:hover {
+            background: var(--accent-green);
+            color: #000;
+        }
+
+        .code-section {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .code-section.visible {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -398,9 +467,117 @@
                     <div class="placeholder">
                         <p>📊 Diagrama MVC</p>
                         <p>Archivo: <code>Docs/diagrams/1-mvc-pattern.puml</code></p>
+                        <button class="toggle-code-btn" onclick="toggleCode('mvc-code')">📋 Ver código PlantUML</button>
                         <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
-                            Abrir en PlantUML Online →
+                            Abrir PlantUML Online →
                         </a>
+                        <div id="mvc-code" class="code-section">
+                            <div class="code-copy-container">
+                                <button class="copy-btn" onclick="copyCode('mvc-plantuml')">Copiar</button>
+                                <pre class="plantuml-code" id="mvc-plantuml">@startuml MVC Pattern
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title MVC Pattern - Model View Controller
+
+' MODEL
+package "Models" {
+  class GameStateModel &lt;&lt;Model&gt;&gt; {
+    +CurrentLevel: int
+    +Score: int
+    +Difficulty: float
+    +CurrentState: GameState
+    +IncrementScore(points: int)
+    +IncrementLevel()
+    +ScaleDifficulty()
+    +Reset()
+  }
+  
+  class PlayerModel &lt;&lt;Model&gt;&gt; {
+    +Lives: int
+    +CurrentWeapon: WeaponType
+    +PowerUps: List&lt;PowerUpType&gt;
+    +AddLife()
+    +RemoveLife()
+    +SetWeapon(weapon: WeaponType)
+    +HasPowerUp(type: PowerUpType): bool
+  }
+}
+
+' CONTROLLER
+package "Core" {
+  class GameManager &lt;&lt;Controller + Singleton&gt;&gt; {
+    {static} +Instance: GameManager
+    -_gameState: GameStateModel
+    -_playerState: PlayerModel
+    +CurrentState: GameState
+    +StartGame()
+    +PauseGame()
+    +ResumeGame()
+    +GameOver()
+    +HandleEnemyDefeated(enemy: Node2D)
+    +HandlePlayerDamaged(damage: float)
+    +UpdateScore(points: int)
+  }
+}
+
+' VIEW
+package "Views" {
+  class GameHUD &lt;&lt;View&gt;&gt; {
+    -_scoreLabel: Label
+    -_healthBar: ProgressBar
+    -_livesLabel: Label
+    -_weaponLabel: Label
+    -_waveLabel: Label
+    +UpdateScore(score: int)
+    +UpdateHealth(current: float, max: float)
+    +UpdateLives(lives: int)
+    +UpdateWeapon(weapon: string)
+    +UpdateWave(wave: int)
+  }
+  
+  class QuizView &lt;&lt;View&gt;&gt; {
+    -_questionPanel: Panel
+    -_questionLabel: Label
+    -_optionButtons: List&lt;Button&gt;
+    +ShowQuestion(question: QuizQuestion)
+    +Hide()
+  }
+}
+
+' RELACIONES MVC
+GameManager --&gt; GameStateModel : manipula
+GameManager --&gt; PlayerModel : manipula
+GameHUD --&gt; GameStateModel : observa
+GameHUD --&gt; PlayerModel : observa
+GameManager --&gt; GameHUD : actualiza
+GameManager --&gt; QuizView : controla
+
+note right of GameManager
+  **CONTROLLER**
+  - Coordina Model y View
+  - Maneja lógica del juego
+  - Responde a eventos
+end note
+
+note left of GameStateModel
+  **MODEL**
+  - Solo contiene datos
+  - Sin lógica de UI
+  - Notifica cambios
+end note
+
+note bottom of GameHUD
+  **VIEW**
+  - Solo visualización
+  - Sin lógica de negocio
+  - Actualiza UI
+end note
+
+@enduml</pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -449,9 +626,105 @@
                     <div class="placeholder">
                         <p>🧩 Diagrama Component Pattern</p>
                         <p>Archivo: <code>Docs/diagrams/2-component-pattern.puml</code></p>
+                        <button class="toggle-code-btn" onclick="toggleCode('component-code')">📋 Ver código PlantUML</button>
                         <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
-                            Abrir en PlantUML Online →
+                            Abrir PlantUML Online →
                         </a>
+                        <div id="component-code" class="code-section">
+                            <div class="code-copy-container">
+                                <button class="copy-btn" onclick="copyCode('component-plantuml')">Copiar</button>
+                                <pre class="plantuml-code" id="component-plantuml">@startuml Component Pattern
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title Component Pattern - Composición sobre Herencia
+
+interface IComponent {
+  +Initialize(owner: Node2D)
+  +Update(delta: double)
+  +Cleanup()
+}
+
+abstract class BaseComponent {
+  #_owner: Node2D
+  #_isInitialized: bool
+  +Initialize(owner: Node2D)
+  +Update(delta: double)
+  +Cleanup()
+  #OnInitialize() {abstract}
+  #OnUpdate(delta: double) {abstract}
+  #OnCleanup() {abstract}
+}
+
+class HealthComponent {
+  +MaxHealth: float
+  +CurrentHealth: float
+  +TakeDamage(amount: float, type: DamageType)
+  +Heal(amount: float)
+}
+
+class MovementComponent {
+  +Speed: float
+  +UseAcceleration: bool
+  +Move(direction: Vector2, delta: double)
+  +ApplyMovement(body: CharacterBody2D)
+}
+
+class WeaponComponent {
+  +FireRate: float
+  -_currentWeapon: IWeapon
+  +SetWeapon(weapon: IWeapon)
+  +TryFire(direction: Vector2): bool
+  +CanFire(): bool
+}
+
+class ShieldComponent {
+  +MaxShieldStrength: float
+  +CurrentShield: float
+  +ActivateShield()
+  +AbsorbDamage(damage: float): float
+  +IsActive(): bool
+}
+
+class Player {
+  -_healthComponent: HealthComponent
+  -_movementComponent: MovementComponent
+  -_weaponComponent: WeaponComponent
+  -_shieldComponent: ShieldComponent
+  +MaxHealth: float
+  +Speed: float
+  -InitializeComponents()
+  -HandleInput(delta: double)
+}
+
+IComponent &lt;|.. BaseComponent
+BaseComponent &lt;|-- HealthComponent
+BaseComponent &lt;|-- MovementComponent
+BaseComponent &lt;|-- WeaponComponent
+BaseComponent &lt;|-- ShieldComponent
+
+Player *-- HealthComponent : contiene
+Player *-- MovementComponent : contiene
+Player *-- WeaponComponent : contiene
+Player *-- ShieldComponent : contiene
+
+note top of Player
+  **COMPOSICIÓN**
+  Player usa componentes en vez de herencia
+  Flexible y reutilizable
+  Cumple "Composition over Inheritance"
+end note
+
+note right of BaseComponent
+  **TEMPLATE METHOD**
+  Define esqueleto del algoritmo
+  Subclases implementan pasos específicos
+end note
+
+@enduml</pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -513,9 +786,120 @@
                     <div class="placeholder">
                         <p>⚔️ Diagrama Strategy Pattern</p>
                         <p>Archivo: <code>Docs/diagrams/3-strategy-pattern.puml</code></p>
+                        <button class="toggle-code-btn" onclick="toggleCode('strategy-code')">📋 Ver código PlantUML</button>
                         <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
-                            Abrir en PlantUML Online →
+                            Abrir PlantUML Online →
                         </a>
+                        <div id="strategy-code" class="code-section">
+                            <div class="code-copy-container">
+                                <button class="copy-btn" onclick="copyCode('strategy-plantuml')">Copiar</button>
+                                <pre class="plantuml-code" id="strategy-plantuml">@startuml Strategy Pattern
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title Strategy Pattern - Armas y AI Intercambiables
+
+' WEAPON STRATEGY
+interface IWeapon {
+  +Fire(position: Vector2, direction: Vector2)
+  +CanFire(): bool
+  +Reload()
+  +GetWeaponName(): string
+  +GetWeaponType(): WeaponType
+}
+
+abstract class BaseWeapon {
+  +Damage: float
+  +ProjectileSpeed: float
+  #_currentAmmo: int
+  #SpawnProjectile(position, direction, type)
+}
+
+class FirewallWeapon {
+  +Fire(position, direction)
+  +CanFire(): bool
+  +GetWeaponName(): "Firewall Básico"
+}
+
+class AntivirusWeapon {
+  -_burstCount: int = 3
+  +Fire(position, direction)
+  +Reload()
+  +GetWeaponName(): "Antivirus Scanner"
+}
+
+class EncryptionWeapon {
+  +Fire(position, direction)
+  +GetWeaponName(): "Cannon de Encriptación"
+}
+
+class HoneypotWeapon {
+  +Fire(position, direction)
+  +GetWeaponName(): "Honeypot Trap"
+}
+
+' AI STRATEGY
+abstract class BaseEnemyAI {
+  #_enemy: CharacterBody2D
+  #_target: Node2D
+  +Initialize(enemy, target)
+  +Update(delta: double) {abstract}
+  #FindTarget(): Node2D
+}
+
+class ChaseAI {
+  +Update(delta: double)
+  ' Persigue directamente al jugador
+}
+
+class ZigZagAI {
+  -_zigzagTimer: float
+  +Update(delta: double)
+  ' Movimiento en zigzag
+}
+
+class CircleAI {
+  -_circleRadius: float
+  +Update(delta: double)
+  ' Rodea al jugador
+}
+
+class WeaponComponent {
+  -_currentWeapon: IWeapon
+  +SetWeapon(weapon: IWeapon)
+  +TryFire(direction: Vector2)
+}
+
+IWeapon &lt;|.. BaseWeapon
+BaseWeapon &lt;|-- FirewallWeapon
+BaseWeapon &lt;|-- AntivirusWeapon
+BaseWeapon &lt;|-- EncryptionWeapon
+BaseWeapon &lt;|-- HoneypotWeapon
+
+BaseEnemyAI &lt;|-- ChaseAI
+BaseEnemyAI &lt;|-- ZigZagAI
+BaseEnemyAI &lt;|-- CircleAI
+
+WeaponComponent o--&gt; IWeapon : usa estrategia
+
+note right of IWeapon
+  **STRATEGY PATTERN**
+  - Algoritmos intercambiables
+  - Open/Closed Principle
+  - Fácil agregar nuevas armas
+end note
+
+note bottom of BaseEnemyAI
+  **STRATEGY PATTERN**
+  - Diferentes comportamientos IA
+  - Cambiables en runtime
+  - Enemigos con personalidades únicas
+end note
+
+@enduml</pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -592,9 +976,123 @@
                     <div class="placeholder">
                         <p>📡 Diagrama Observer + Factory</p>
                         <p>Archivo: <code>Docs/diagrams/4-observer-factory.puml</code></p>
+                        <button class="toggle-code-btn" onclick="toggleCode('observer-code')">📋 Ver código PlantUML</button>
                         <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
-                            Abrir en PlantUML Online →
+                            Abrir PlantUML Online →
                         </a>
+                        <div id="observer-code" class="code-section">
+                            <div class="code-copy-container">
+                                <button class="copy-btn" onclick="copyCode('observer-plantuml')">Copiar</button>
+                                <pre class="plantuml-code" id="observer-plantuml">@startuml Observer and Factory Patterns
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title Observer Pattern (EventBus) + Factory Pattern
+
+' OBSERVER PATTERN
+class GameEventBus &lt;&lt;Singleton + Observer&gt;&gt; {
+  {static} +Instance: GameEventBus
+  +EnemySpawned: Action&lt;Node2D&gt;
+  +EnemyDefeated: Action&lt;Node2D&gt;
+  +PlayerDamaged: Action&lt;float&gt;
+  +ScoreChanged: Action&lt;int&gt;
+  +WaveStarted: Action&lt;int&gt;
+  +PowerUpCollected: Action&lt;PowerUpType&gt;
+  +WeaponChanged: Action&lt;WeaponType&gt;
+  +QuizQuestionShown: Action&lt;QuizQuestion&gt;
+  +SecurityTipShown: Action&lt;string&gt;
+  +VulnerabilityDetected: Action&lt;Vulnerability&gt;
+}
+
+class GameManager &lt;&lt;Publisher&gt;&gt; {
+  +HandleEnemyDefeated(enemy)
+  +HandlePlayerDamaged(damage)
+  +UpdateScore(points)
+}
+
+class Player &lt;&lt;Publisher&gt;&gt; {
+  +TakeDamage(amount)
+}
+
+class WaveSystem &lt;&lt;Publisher&gt;&gt; {
+  +StartWave()
+}
+
+class GameHUD &lt;&lt;Subscriber&gt;&gt; {
+  +UpdateScore(score)
+  +UpdateHealth(current, max)
+  -SubscribeToEvents()
+}
+
+class QuizView &lt;&lt;Subscriber&gt;&gt; {
+  +ShowQuestion(question)
+  -SubscribeToEvents()
+}
+
+' FACTORY PATTERN
+class EnemyFactory &lt;&lt;Factory&gt;&gt; {
+  {static} -_enemyScenes: Dictionary
+  {static} +Initialize()
+  {static} +CreateEnemy(type, position): Enemy
+  {static} -GetEnemyStats(type): EnemyStats
+  {static} -CreateAIComponent(type): BaseEnemyAI
+}
+
+enum EnemyType {
+  Malware
+  Phishing
+  DDoS
+  SQLInjection
+  BruteForce
+  Ransomware
+  Trojan
+  Worm
+  Spyware
+  Adware
+}
+
+abstract class BaseEnemyAI {
+  +Update(delta)
+}
+
+class ChaseAI
+class ZigZagAI
+class CircleAI
+
+' Observer Relations
+GameEventBus &lt;-- GameManager : publica eventos
+GameEventBus &lt;-- Player : publica eventos
+GameEventBus &lt;-- WaveSystem : publica eventos
+GameHUD --&gt; GameEventBus : se suscribe
+QuizView --&gt; GameEventBus : se suscribe
+
+' Factory Relations
+EnemyFactory ..&gt; EnemyType : usa
+EnemyFactory --&gt; BaseEnemyAI : crea
+BaseEnemyAI &lt;|-- ChaseAI
+BaseEnemyAI &lt;|-- ZigZagAI
+BaseEnemyAI &lt;|-- CircleAI
+
+note right of GameEventBus
+  **OBSERVER PATTERN**
+  - Desacoplamiento total
+  - Comunicación async
+  - Múltiples suscriptores
+  - Single Responsibility
+end note
+
+note bottom of EnemyFactory
+  **FACTORY PATTERN**
+  - Centraliza creación
+  - Oculta complejidad
+  - Fácil agregar tipos
+  - Open/Closed Principle
+end note
+
+@enduml</pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -651,9 +1149,139 @@
                     <div class="placeholder">
                         <p>🏗️ Diagrama Arquitectura Completa</p>
                         <p>Archivo: <code>Docs/diagrams/5-complete-architecture.puml</code></p>
+                        <button class="toggle-code-btn" onclick="toggleCode('complete-code')">📋 Ver código PlantUML</button>
                         <a href="https://www.plantuml.com/plantuml/uml/" target="_blank" class="plantuml-link">
-                            Abrir en PlantUML Online →
+                            Abrir PlantUML Online →
                         </a>
+                        <div id="complete-code" class="code-section">
+                            <div class="code-copy-container">
+                                <button class="copy-btn" onclick="copyCode('complete-plantuml')">Copiar</button>
+                                <pre class="plantuml-code" id="complete-plantuml">@startuml Complete Architecture Overview
+
+skinparam classAttributeIconSize 0
+left to right direction
+
+title Arquitectura Completa - Code Rippier
+
+package "🎮 CORE LAYER" {
+  [GameManager\n(Controller + Singleton)]
+  [GameEventBus\n(Observer)]
+  [Interfaces\nIComponent, IWeapon\nIDamageable, IMovable]
+}
+
+package "📊 DATA LAYER (Models)" {
+  [GameStateModel]
+  [PlayerModel]
+}
+
+package "🎨 PRESENTATION LAYER (Views)" {
+  [GameHUD]
+  [QuizView]
+}
+
+package "🔧 COMPONENT LAYER" {
+  [HealthComponent]
+  [MovementComponent]
+  [WeaponComponent]
+  [ShieldComponent]
+}
+
+package "⚔️ WEAPONS (Strategy)" {
+  [FirewallWeapon]
+  [AntivirusWeapon]
+  [EncryptionWeapon]
+  [HoneypotWeapon]
+}
+
+package "👾 ENTITIES" {
+  [Player\n(Composition)]
+  [Projectile]
+  [EnemyFactory]
+}
+
+package "🤖 AI (Strategy)" {
+  [ChaseAI]
+  [ZigZagAI]
+  [CircleAI]
+}
+
+package "⚙️ SYSTEMS (Singletons)" {
+  [WaveSystem]
+  [PowerUpSystem]
+  [VulnerabilitySystem]
+}
+
+package "📚 EDUCATION" {
+  [QuizSystem\n(Singleton)]
+  [SecurityTipsSystem\n(Singleton)]
+}
+
+package "🎬 MAIN SCENE" {
+  [MainScene\n(Coordinator)]
+}
+
+' MVC Relations
+[GameManager\n(Controller + Singleton)] --&gt; [GameStateModel]
+[GameManager\n(Controller + Singleton)] --&gt; [PlayerModel]
+[GameHUD] --&gt; [GameStateModel]
+[GameHUD] --&gt; [PlayerModel]
+
+' Observer
+[GameEventBus\n(Observer)] &lt;-- [GameManager\n(Controller + Singleton)]
+[GameEventBus\n(Observer)] &lt;-- [Player\n(Composition)]
+[GameHUD] --&gt; [GameEventBus\n(Observer)]
+[QuizView] --&gt; [GameEventBus\n(Observer)]
+
+' Component Composition
+[Player\n(Composition)] *-- [HealthComponent]
+[Player\n(Composition)] *-- [MovementComponent]
+[Player\n(Composition)] *-- [WeaponComponent]
+[Player\n(Composition)] *-- [ShieldComponent]
+
+' Strategy
+[WeaponComponent] o-- [FirewallWeapon]
+[WeaponComponent] o-- [AntivirusWeapon]
+[WeaponComponent] o-- [EncryptionWeapon]
+[WeaponComponent] o-- [HoneypotWeapon]
+
+[EnemyFactory] --&gt; [ChaseAI]
+[EnemyFactory] --&gt; [ZigZagAI]
+[EnemyFactory] --&gt; [CircleAI]
+
+' Main Coordinator
+[MainScene\n(Coordinator)] --&gt; [GameManager\n(Controller + Singleton)]
+[MainScene\n(Coordinator)] --&gt; [WaveSystem]
+[MainScene\n(Coordinator)] --&gt; [PowerUpSystem]
+[MainScene\n(Coordinator)] --&gt; [VulnerabilitySystem]
+[MainScene\n(Coordinator)] --&gt; [QuizSystem\n(Singleton)]
+[MainScene\n(Coordinator)] --&gt; [SecurityTipsSystem\n(Singleton)]
+[MainScene\n(Coordinator)] --&gt; [GameHUD]
+[MainScene\n(Coordinator)] --&gt; [QuizView]
+
+' Systems
+[WaveSystem] --&gt; [EnemyFactory]
+[GameManager\n(Controller + Singleton)] --&gt; [SecurityTipsSystem\n(Singleton)]
+
+note bottom of [MainScene\n(Coordinator)]
+  **ENTRY POINT**
+  Inicializa todos los sistemas
+  Carga escena del jugador
+end note
+
+legend right
+  |= Patrón |= Implementación |
+  | MVC | GameManager (C), Models (M), Views (V) |
+  | Component | Player compuesto de 4 componentes |
+  | Strategy | Armas intercambiables, AI intercambiable |
+  | Observer | GameEventBus - 15 eventos |
+  | Factory | EnemyFactory - 10 tipos de enemigos |
+  | Singleton | GameManager, Systems (6 clases) |
+  | Template Method | BaseComponent, BaseWeapon, BaseEnemyAI |
+endlegend
+
+@enduml</pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -745,6 +1373,27 @@
             
             // Activate button
             event.target.classList.add('active');
+        }
+
+        function toggleCode(id) {
+            const codeSection = document.getElementById(id);
+            codeSection.classList.toggle('visible');
+        }
+
+        function copyCode(id) {
+            const codeElement = document.getElementById(id);
+            const text = codeElement.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                btn.textContent = '✓ Copiado!';
+                btn.classList.add('copied');
+                
+                setTimeout(() => {
+                    btn.textContent = 'Copiar';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
         }
     </script>
 </body>
